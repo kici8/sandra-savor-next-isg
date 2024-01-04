@@ -8,11 +8,15 @@ import { NextRequest } from "next/server";
 
 export async function POST(request: NextRequest) {
   // TODO: with params I can get the path for the single work
-  // TODO: how to hendle the translation?
+  // TODO: how to handle the translation?
   const secret = request.nextUrl.searchParams.get("secret");
+  console.log("secret", secret);
 
   if (secret !== process.env.MY_SECRET_TOKEN) {
-    return Response.json({ message: "Invalid token" }, { status: 400 });
+    return Response.json(
+      { message: `Invalid token ${secret}` },
+      { status: 400 }
+    );
   }
 
   // TODO: Path or Tag
