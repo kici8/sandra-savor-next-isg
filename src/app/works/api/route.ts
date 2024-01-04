@@ -3,11 +3,9 @@ import { NextApiRequest, NextApiResponse } from "next";
 // https://nextjs.org/docs/pages/building-your-application/data-fetching/incremental-static-regeneration
 // Url example:
 // https://<your-site.com>/api/revalidate?secret=<token>
+// https://sandra-savor-next-isg.vercel.app/works/api?secret=1234
 
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
+export async function GET(req: NextApiRequest, res: NextApiResponse) {
   // Check for secret to confirm this is a valid request
   if (req.query.secret !== process.env.MY_SECRET_TOKEN) {
     return res.status(401).json({ message: "Invalid token" });
