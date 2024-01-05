@@ -1,17 +1,18 @@
 import Image from "next/image";
 import { notFound } from "next/navigation";
 
+// Generate static paths based on works slug
 export async function generateStaticParams() {
   const works = await fetch(
     "https://strapi-production-027c9.up.railway.app/api/works"
   ).then((res) => res.json());
 
-  // TODO: add
   return works.data.map((work: any) => ({
     slug: work.attributes.slug,
   }));
 }
 
+// Generate static props
 async function fetchWork(slug: string) {
   const filteredWorks = await fetch(
     `https://strapi-production-027c9.up.railway.app/api/works?filters[slug][$eq]=${slug}&populate=images`
@@ -19,9 +20,12 @@ async function fetchWork(slug: string) {
   return filteredWorks.data[0];
 }
 
+// Page component
 export default async function Page({ params }: { params: { slug: string } }) {
+  // Data fetching
   const work = await fetchWork(params.slug);
 
+  // 404 if no work found
   if (!work) {
     notFound();
   }

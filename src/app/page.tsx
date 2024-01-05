@@ -2,7 +2,13 @@ import Link from "next/link";
 
 async function getData() {
   const res = await fetch(
-    "https://strapi-production-027c9.up.railway.app/api/works"
+    "https://strapi-production-027c9.up.railway.app/api/works",
+    {
+      next: {
+        // Use tags to invalidate cache with revalidateTag method
+        tags: ["works"],
+      },
+    }
   );
 
   if (!res.ok) {
