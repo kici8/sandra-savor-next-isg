@@ -1,0 +1,9 @@
+{
+    "cSpell.words": [
+        "tailwindcss"
+    ],
+    "i18n-ally.localesPaths": [
+        "src/messages"
+    ],
+    "i18n-ally.keystyle": "nested"
+}

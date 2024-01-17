@@ -1,10 +1,13 @@
-import Image from "next/image";
 import { notFound } from "next/navigation";
 
 // Generate static paths based on works slug
-export async function generateStaticParams() {
+export async function generateStaticParams({
+  params: { locale },
+}: {
+  params: { locale: string };
+}) {
   const works = await fetch(
-    "https://strapi-production-027c9.up.railway.app/api/works"
+    `https://strapi-production-027c9.up.railway.app/api/works?locale=${locale}`,
   ).then((res) => res.json());
 
   return works.data.map((work: any) => ({
@@ -13,17 +16,21 @@ export async function generateStaticParams() {
 }
 
 // Generate static props
-async function fetchWork(slug: string) {
+async function fetchWork({ slug, locale }: { slug: string; locale: string }) {
   const filteredWorks = await fetch(
-    `https://strapi-production-027c9.up.railway.app/api/works?filters[slug][$eq]=${slug}&populate=images`
+    `https://strapi-production-027c9.up.railway.app/api/works?filters[slug][$eq]=${slug}&populate=images&locale=${locale}`,
   ).then((res) => res.json());
   return filteredWorks.data[0];
 }
 
 // Page component
-export default async function Page({ params }: { params: { slug: string } }) {
+export default async function Page({
+  params,
+}: {
+  params: { slug: string; locale: string };
+}) {
   // Data fetching
-  const work = await fetchWork(params.slug);
+  const work = await fetchWork({ slug: params.slug, locale: params.locale });
 
   // 404 if no work found
   if (!work) {
@@ -35,7 +42,7 @@ export default async function Page({ params }: { params: { slug: string } }) {
       <h1 className="text-3xl font-bold">{work.attributes.title}</h1>
       <p className="text-xl">{work.attributes.description}</p>
       {work.attributes.images.data.map((image: any) => (
-        <picture key={image.id} className="my-3 width-100">
+        <picture key={image.id} className="width-100 my-3">
           <img
             src={image.attributes.formats.large.url}
             alt={image.attributes.alternativeText}
