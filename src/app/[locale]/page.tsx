@@ -33,6 +33,7 @@ export default async function Home({
   return (
     <main className="flex min-h-screen flex-col p-24">
       <h1 className="text-5xl font-bold">{t("home.title")}</h1>
+      {process.env.API_PATH}
       {data.data.map((work: any) => (
         <Link
           key={work.id}

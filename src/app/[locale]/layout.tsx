@@ -4,6 +4,7 @@ import "../globals.css";
 import { locales } from "@/i18n";
 import { unstable_setRequestLocale } from "next-intl/server";
 import Link from "next/link";
+import { ApolloWrapper } from "../ApolloWrapper";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -29,19 +30,21 @@ export default async function RootLayout({
   unstable_setRequestLocale(locale);
 
   return (
-    <html lang="en">
+    <html lang={locale}>
       <body className={inter.className}>
-        <nav className="flex justify-between gap-3 px-24 py-3">
-          <Link href={`/${locale}`}>Go Home</Link>
-          <div className="flex gap-3">
-            {locales.map((language) => (
-              <Link key={language} href={`/${language}`}>
-                {language === locale ? <strong>{language}</strong> : language}
-              </Link>
-            ))}
-          </div>
-        </nav>
-        {children}
+        <ApolloWrapper>
+          <nav className="flex justify-between gap-3 px-24 py-3">
+            <Link href={`/${locale}`}>Go Home</Link>
+            <div className="flex gap-3">
+              {locales.map((language) => (
+                <Link key={language} href={`/${language}`}>
+                  {language === locale ? <strong>{language}</strong> : language}
+                </Link>
+              ))}
+            </div>
+          </nav>
+          {children}
+        </ApolloWrapper>
       </body>
     </html>
   );
