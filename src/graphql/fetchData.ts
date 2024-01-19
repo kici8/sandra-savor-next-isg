@@ -10,7 +10,7 @@ export const fetchData = async <Result, Variables>(
   document: TypedDocumentString<Result, Variables>,
   variables: Variables,
 ) => {
-  const response = await fetch(process.env.API_URL as string, {
+  const response = await fetch(process.env.GRAPHQL_ENDPOINT as string, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
