@@ -1,14 +1,12 @@
-import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidatePath } from "next/cache";
 import { NextRequest } from "next/server";
 
 // https://nextjs.org/docs/pages/building-your-application/data-fetching/incremental-static-regeneration
 // Url example:
 // https://<your-site.com>/api/revalidate?secret=<token>
-// https://sandra-savor-next-isg.vercel.app/works/api?secret=1234
+// https://sandra-savor-next-isg.vercel.app/api/works?secret=1234
 
 export async function POST(request: NextRequest) {
-  // TODO: with params I can get the path for the single work
-  // TODO: how to handle the translation?
   const secret = request.nextUrl.searchParams.get("secret");
   const parsedRequest = await request.json();
 
@@ -16,16 +14,19 @@ export async function POST(request: NextRequest) {
     return Response.json({ message: `Invalid token` }, { status: 400 });
   }
 
-  // TODO: Path or Tag
+  // TODO: try to use tag
   if (parsedRequest.model === "work") {
-    revalidateTag("works");
-    revalidatePath(`/works/${parsedRequest.entry.slug}`);
+    // revalidateTag("works");
+    revalidatePath(`/${parsedRequest.entry.locale}`);
+    revalidatePath(
+      `/${parsedRequest.entry.locale}/works/${parsedRequest.entry.slug}`,
+    );
   }
 
   return Response.json({ revalidated: true, now: Date.now() });
 }
 
-// TODO: this is an example of the payload (entry) I get from the webhook
+// This is an example of the payload (entry) I get from the webhook
 // {
 //     "event": "entry.update",
 //     "createdAt": "2024-01-05T15:24:53.599Z",
