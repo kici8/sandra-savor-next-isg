@@ -13,15 +13,16 @@ const worksForHome = graphql(/* GraphQL */ `
           slug
           title
           description
-          # images {
-          #   data {
-          #     id
-          #     attributes {
-          #       url
-          #       previewUrl
-          #     }
-          #   }
-          # }
+          images {
+            data {
+              id
+              attributes {
+                url
+                previewUrl
+                alternativeText
+              }
+            }
+          }
         }
       }
     }
@@ -48,8 +49,19 @@ export default async function Home({
           className="flex flex-col py-3"
           href={`${locale}/works/${work.attributes?.slug}`}
         >
-          <h2 className="text-3xl font-bold">{work.attributes?.title}</h2>
-          <p className="text-xl">{work.attributes?.description}</p>
+          <picture className="width-100 my-3">
+            <img
+              src={work.attributes?.images.data[0].attributes?.url}
+              alt={
+                work.attributes?.images.data[0].attributes?.alternativeText ??
+                ""
+              }
+            />
+          </picture>
+          <h2 className="text-center text-6xl font-bold">
+            {work.attributes?.title}
+          </h2>
+          {/* <p className="text-xl">{work.attributes?.description}</p> */}
         </Link>
       ))}
     </main>

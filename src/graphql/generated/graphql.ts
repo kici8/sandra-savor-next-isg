@@ -1170,7 +1170,7 @@ export type WorksForHomeQueryVariables = Exact<{
 }>;
 
 
-export type WorksForHomeQuery = { __typename?: 'Query', works?: { __typename?: 'WorkEntityResponseCollection', data: Array<{ __typename?: 'WorkEntity', id?: string | null, attributes?: { __typename?: 'Work', slug?: string | null, title?: string | null, description: string } | null }> } | null };
+export type WorksForHomeQuery = { __typename?: 'Query', works?: { __typename?: 'WorkEntityResponseCollection', data: Array<{ __typename?: 'WorkEntity', id?: string | null, attributes?: { __typename?: 'Work', slug?: string | null, title?: string | null, description: string, images: { __typename?: 'UploadFileRelationResponseCollection', data: Array<{ __typename?: 'UploadFileEntity', id?: string | null, attributes?: { __typename?: 'UploadFile', url: string, previewUrl?: string | null, alternativeText?: string | null } | null }> } } | null }> } | null };
 
 export type WorksForWorkStaticParamsQueryVariables = Exact<{
   locale?: InputMaybe<Scalars['I18NLocaleCode']['input']>;
@@ -1211,6 +1211,16 @@ export const WorksForHomeDocument = new TypedDocumentString(`
         slug
         title
         description
+        images {
+          data {
+            id
+            attributes {
+              url
+              previewUrl
+              alternativeText
+            }
+          }
+        }
       }
     }
   }

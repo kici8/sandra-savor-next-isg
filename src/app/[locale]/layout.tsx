@@ -4,6 +4,7 @@ import "../globals.css";
 import { locales } from "@/i18n";
 import { unstable_setRequestLocale } from "next-intl/server";
 import Link from "next/link";
+import Logo from "@/components/Logo";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -30,9 +31,31 @@ export default async function RootLayout({
 
   return (
     <html lang="en">
-      <body className={inter.className}>
-        <nav className="flex justify-between gap-3 px-24 py-3">
-          <Link href={`/${locale}`}>Go Home</Link>
+      <body
+        className={`${inter.className} bg-orange-50 text-gray-900 dark:bg-black dark:text-orange-50`}
+      >
+        <header className="flex h-20 items-center px-4">
+          <nav className="flex flex-1">
+            <ul className="relative flex flex-grow items-center justify-between">
+              <li>
+                <Link className="" href={`/${locale}`}>
+                  Sandra Savorgnani
+                </Link>
+              </li>
+              <li className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+                <Link href={`/${locale}`}>
+                  <Logo />
+                </Link>
+              </li>
+              <li>
+                <Link href={`/${locale}/about`}>About</Link>
+              </li>
+            </ul>
+          </nav>
+        </header>
+
+        {children}
+        <footer>
           <div className="flex gap-3">
             {locales.map((language) => (
               <Link key={language} href={`/${language}`}>
@@ -40,8 +63,7 @@ export default async function RootLayout({
               </Link>
             ))}
           </div>
-        </nav>
-        {children}
+        </footer>
       </body>
     </html>
   );
