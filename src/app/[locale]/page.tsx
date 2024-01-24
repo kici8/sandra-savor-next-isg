@@ -42,7 +42,13 @@ export default async function Home({
 
   return (
     <main className="flex min-h-screen flex-col p-24">
-      <h1 className="text-5xl font-bold">{t("home.title")}</h1>
+      {/* <h1 className="text-5xl font-bold">{t("home.title")}</h1> */}
+      <p>Ciao!</p>
+      <p>
+        Sono Sandra, un'artista e illustratrice freelance con casa nelle
+        vicinanze di Venezia.
+      </p>
+
       {data.works?.data.map((work) => (
         <Link
           key={work.id}

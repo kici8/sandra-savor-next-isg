@@ -34,12 +34,12 @@ export default async function RootLayout({
       <body
         className={`${inter.className} bg-orange-50 text-gray-900 dark:bg-black dark:text-orange-50`}
       >
-        <header className="flex h-20 items-center px-4">
+        {/* <header className="flex h-20 items-center px-6">
           <nav className="flex flex-1">
             <ul className="relative flex flex-grow items-center justify-between">
               <li>
                 <Link className="" href={`/${locale}`}>
-                  Sandra Savorgnani
+                  SANDRA SAVORGNANI
                 </Link>
               </li>
               <li className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
@@ -48,7 +48,32 @@ export default async function RootLayout({
                 </Link>
               </li>
               <li>
-                <Link href={`/${locale}/about`}>About</Link>
+                <Link href={`/${locale}/about`}>ABOUT</Link>
+              </li>
+            </ul>
+          </nav>
+        </header> */}
+
+        <header className="flex h-20 items-center px-6">
+          <nav className="flex flex-1">
+            <ul className="relative flex flex-grow items-center gap-4">
+              <li className="mr-auto flex items-center gap-4">
+                <Link
+                  href={`/${locale}`}
+                  className="flex items-center gap-3"
+                  aria-label="Sandra savorgnani home"
+                >
+                  <Logo />
+                  <span className="hidden text-lg md:block">
+                    Sandra Savorgnani
+                  </span>
+                </Link>
+              </li>
+              <li>
+                <Link href={`/${locale}/works`}>WORKS</Link>
+              </li>
+              <li>
+                <Link href={`/${locale}/about`}>ABOUT</Link>
               </li>
             </ul>
           </nav>
