@@ -3,6 +3,9 @@ import { graphql } from "@/graphql/generated/gql";
 import { WorksForHomeQuery } from "@/graphql/generated/graphql";
 import { getTranslations, unstable_setRequestLocale } from "next-intl/server";
 import Link from "next/link";
+import HomeScene from "./homeComponent/HomeScene";
+import { url } from "inspector";
+import { filterFalsyValues } from "@/helper/filterFalsyValues";
 
 const worksForHome = graphql(/* GraphQL */ `
   query worksForHome($locale: I18NLocaleCode) {
@@ -39,17 +42,22 @@ export default async function Home({
   // const data = await getData(locale);
   const data: WorksForHomeQuery = await fetchData(worksForHome, { locale });
   const t = await getTranslations();
+  const imagesUrl = filterFalsyValues(
+    data.works?.data.map(
+      (work) => work.attributes?.images.data[0].attributes?.url,
+    ) ?? [],
+  );
 
   return (
-    <main className="flex min-h-screen flex-col p-24">
+    <main className="relative h-screen">
       {/* <h1 className="text-5xl font-bold">{t("home.title")}</h1> */}
-      <p>Ciao!</p>
+      {/* <p>Ciao!</p>
       <p>
         Sono Sandra, un'artista e illustratrice freelance con casa nelle
         vicinanze di Venezia.
-      </p>
+      </p> */}
 
-      {data.works?.data.map((work) => (
+      {/* {data.works?.data.map((work) => (
         <Link
           key={work.id}
           className="flex flex-col py-3"
@@ -67,9 +75,9 @@ export default async function Home({
           <h2 className="text-center text-6xl font-bold">
             {work.attributes?.title}
           </h2>
-          {/* <p className="text-xl">{work.attributes?.description}</p> */}
         </Link>
-      ))}
+      ))} */}
+      <HomeScene imagesUrl={[...imagesUrl, ...imagesUrl, ...imagesUrl]} />
     </main>
   );
 }
