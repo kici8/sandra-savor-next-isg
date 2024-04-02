@@ -49,7 +49,7 @@ export default async function Home({
   );
 
   return (
-    <main className="relative h-screen">
+    <main className="absolute left-0 top-0 h-dvh w-full bg-red-400">
       {/* <h1 className="text-5xl font-bold">{t("home.title")}</h1> */}
       {/* <p>Ciao!</p>
       <p>
@@ -77,7 +77,9 @@ export default async function Home({
           </h2>
         </Link>
       ))} */}
-      <HomeScene imagesUrl={[...imagesUrl, ...imagesUrl, ...imagesUrl]} />
+      <HomeScene
+        imagesUrl={[...imagesUrl, ...imagesUrl, ...imagesUrl, imagesUrl[0]]}
+      />
     </main>
   );
 }

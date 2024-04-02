@@ -54,7 +54,7 @@ export default async function RootLayout({
           </nav>
         </header> */}
 
-        <header className="flex h-20 items-center px-6">
+        <header className="absolute left-0 top-0 z-30 flex h-20 w-full items-center px-6">
           <nav className="flex flex-1">
             <ul className="relative flex flex-grow items-center gap-4">
               <li className="mr-auto flex items-center gap-4">
@@ -80,7 +80,7 @@ export default async function RootLayout({
         </header>
 
         {children}
-        <footer>
+        <footer className="absolute bottom-0 left-0 h-12 w-full items-center px-6">
           <div className="flex gap-3">
             {locales.map((language) => (
               <Link key={language} href={`/${language}`}>
