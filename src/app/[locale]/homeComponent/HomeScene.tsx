@@ -3,16 +3,16 @@
 import { ScrollControls, shaderMaterial, useScroll } from "@react-three/drei";
 import {
   Canvas,
-  GroupProps,
   ReactThreeFiber,
   extend,
   useFrame,
-  useThree,
   useLoader,
+  useThree,
 } from "@react-three/fiber";
-import { useControls } from "leva";
 import { Suspense, useRef, useState } from "react";
 import * as THREE from "three";
+import fragmentShader from "./fragment.frag";
+import vertexShader from "./vertex.vert";
 
 type HomeSceneProps = {
   imagesUrl: string[];
@@ -74,6 +74,7 @@ const Card: React.FC<CardProps> = ({ url, index, numberOfImages }) => {
   // TODO: remove realAngle state
   const [realAngle, setRealAngle] = useState(0);
   const [isSelected, setIsSelected] = useState(false);
+  const [previousScrollOffset, setPreviousScrollOffset] = useState(0);
 
   const [image] = useLoader(THREE.TextureLoader, [url]);
 
@@ -85,12 +86,31 @@ const Card: React.FC<CardProps> = ({ url, index, numberOfImages }) => {
   const cardScale = shorterSide * 0.48;
   const starCardNumber = 9;
 
+  let isScrollingDown = true;
+
   useFrame(({ clock }, delta) => {
     if (ref.current) {
       // Calculate the scroll angle based on the scroll offset
       // x : scrollOffset = Math.PI * 2 : 1
       const scrollAngle = scrollData.offset * Math.PI * 2;
+      // TODO: This is bad - remove the state
       setRealAngle(scrollAngle + angle);
+
+      if (scrollData.offset !== previousScrollOffset) {
+        isScrollingDown = scrollData.offset > previousScrollOffset;
+        setPreviousScrollOffset(scrollData.offset);
+      }
+
+      // Check if the scroll direction has changed
+
+      // if (scrollData.delta > 0.005) {
+      //   console.log(
+      //     "scrollDelta",
+      //     scrollData.delta,
+      //     scrollData.offset,
+      //     scrollData.eps,
+      //   );
+      // }
 
       // Calculate the new position of the card based on the scroll angle and the adjusted angle
       ref.current.position.x = Math.cos(scrollAngle + angle) * radius;
@@ -143,9 +163,11 @@ const Card: React.FC<CardProps> = ({ url, index, numberOfImages }) => {
       <meshStandardMaterial
       // map={new THREE.TextureLoader().load(url)}
       />
+
       <cardShaderMaterial
         // wireframe
-        uColor="violet"
+        // uColor="violet"
+        scrollDelta={-1 * scrollData.delta}
         uTime={4}
         uTexture={image}
         ref={cardShaderMaterialRef}
@@ -158,71 +180,22 @@ const Card: React.FC<CardProps> = ({ url, index, numberOfImages }) => {
 const CardShaderMaterial = shaderMaterial(
   {
     uTime: 0,
-    uColor: new THREE.Color(0xffff00),
+    scrollDelta: 0,
+    // uColor: new THREE.Color(0xffff00),
     uTexture: new THREE.Texture(),
   },
   // Vertex shader
-  /* glsl */ `
-      precision mediump float;
-      uniform float uTime;
-      // varying is used to pass data from the vertex shader to the fragment shader
-      varying vec2 vUv;
-
-      void main() {
-        // vUv is a varying vec2 that contains the UV coordinates of the vertex
-        vUv = uv;
-
-        vec3 pos = position;
-    
-        // float bendAmount = 30.0; // Adjust this to control the amount of bending
-        // float bendRadius = 0.5; // Adjust this to control the radius of the bending
-        // float theta = pos.x / bendRadius;
-        // pos.x = bendRadius * sin(theta);
-        // pos.z = bendRadius * (1.0 - cos(theta)) * bendAmount;
-
-        float bendAmount = 10.0; // Adjust this to control the amount of bending 
-        float bendRadius = 1.5; // Adjust this to control the radius of the bending
-        float theta = pos.x / bendRadius;
-        pos.z = radians(360.0) * (1.0 - cos(theta)) * bendAmount;
-
-      // pos.x = radians(360.0) * sin(theta);
-      
-
-
-        
-
-        // Wave effect on the z axis based on the y position
-        // float waveFreq = 5.0;
-        // float waveAmp = 0.1;
-        // pos.z += sin(pos.x * waveFreq + uTime) * waveAmp;
-        // pos.z += sin(pos.y * waveFreq + uTime) * waveAmp;
-    
-        gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
-      }
-    `,
+  vertexShader,
   // Fragment shader
-  /* glsl */ `
-      precision mediump float;
-      uniform vec3 uColor;
-      uniform float uTime;
-      uniform sampler2D uTexture;
-      // access the UV coordinates passed from the vertex shader
-      varying vec2 vUv;
-
-      void main() {
-        vec3 texture = texture2D(uTexture, vUv).rgb;
-        // gl_FragColor is a vec4 that contains the color of the pixel
-        // gl_FragColor = vec4(sin(vUv.x + uTime) * uColor, 1.0);
-        gl_FragColor = vec4(texture, 1.0);
-      }
-    `,
+  fragmentShader,
 );
 
 declare global {
   namespace JSX {
     interface IntrinsicElements {
       cardShaderMaterial: {
-        uColor: string;
+        // uColor: string;
+        scrollDelta: number;
         uTime: number;
         uTexture: THREE.Texture;
       } & ReactThreeFiber.Object3DNode<

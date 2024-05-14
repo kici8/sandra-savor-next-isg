@@ -3,6 +3,7 @@
     "codegen",
     "drei",
     "glsl",
+    "glslify",
     "maath",
     "mediump",
     "nextjs",
