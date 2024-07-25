@@ -1,6 +1,12 @@
 "use client";
 
-import { ScrollControls, shaderMaterial, useScroll } from "@react-three/drei";
+import {
+  Scroll,
+  ScrollControls,
+  shaderMaterial,
+  Text,
+  useScroll,
+} from "@react-three/drei";
 import {
   Canvas,
   ReactThreeFiber,
@@ -22,11 +28,7 @@ const HomeScene: React.FC<HomeSceneProps> = ({ imagesUrl }) => {
   return (
     <Canvas camera={{ position: [0, 0, 10], fov: 10, rotation: [0, 0, 0] }}>
       <ambientLight />
-      <ScrollControls>
-        <Suspense fallback={null}>
-          <Rig imagesUrl={imagesUrl} />
-        </Suspense>
-      </ScrollControls>
+      <Rig imagesUrl={imagesUrl} />
     </Canvas>
   );
 };
@@ -37,152 +39,149 @@ type RigProps = {
 
 const Rig: React.FC<RigProps> = ({ imagesUrl }) => {
   const { viewport } = useThree();
+  // Data
+  const shorterSide =
+    viewport.height < viewport.width ? viewport.height : viewport.width;
+  const cardWidth = shorterSide * 0.48;
+  const cardHeight = cardWidth * 1.33;
+  // const cardHeight = viewport.height;
+  const gap = 0.05;
+  const heightWithGap = cardHeight + gap;
+
+  // Starts from the center of the screen
+  // pages={
+  //   (viewport.height - heightWithGap + imagesUrl.length * heightWithGap) /
+  //   viewport.height
+  // }
+  // Starts from the top of the screen
+  // pages={(heightWithGap * imagesUrl.length) / viewport.height}
+  const pages =
+    (viewport.height - heightWithGap + imagesUrl.length * heightWithGap) /
+    viewport.height;
 
   return (
-    <group
-      position={[-viewport.width / 2, viewport.height / 2, 0]}
-      // rotation={[Math.PI / 1.8, 0, 0]}
-    >
-      {imagesUrl.map((url, index) => {
-        return (
-          <Card
-            // TODO: remove index from key
-            key={url + index}
-            url={url}
-            index={index}
-            numberOfImages={imagesUrl.length}
-          />
-        );
-      })}
-    </group>
+    <Suspense fallback={null}>
+      <Text scale={0.05} position={[0, 0.5, 0]}>
+        wh: {Math.round(viewport.height * 10000) / 10000} center:{" "}
+        {Math.round((viewport.height / 2) * 10000) / 10000}
+      </Text>
+      <ScrollControls
+        damping={0.1}
+        // infinite
+        pages={pages}
+      >
+        <Scroll>
+          {imagesUrl.map((url, index) => {
+            return (
+              <Card
+                // TODO: remove index from key
+                key={url + index}
+                url={url}
+                cardWidth={cardWidth}
+                cardHeight={cardHeight}
+                heightWithGap={heightWithGap}
+                pages={pages}
+                // start from the center of the screen
+                positionY={-index * heightWithGap}
+                // start from the top of the screen
+                // position={[
+                //   0,
+                //   -index * heightWithGap + (viewport.height - cardHeight) / 2,
+                //   0,
+                // ]}
+                index={index}
+              />
+            );
+          })}
+        </Scroll>
+      </ScrollControls>
+    </Suspense>
   );
 };
 
 type CardProps = {
   url: string;
+  cardWidth: number;
+  cardHeight: number;
+  heightWithGap: number;
+  positionY: number;
+  pages: number;
   index: number;
-  numberOfImages: number;
 };
 
-const Card: React.FC<CardProps> = ({ url, index, numberOfImages }) => {
+const Card: React.FC<CardProps> = ({
+  url,
+  cardWidth,
+  cardHeight,
+  heightWithGap,
+  positionY,
+  pages,
+  index,
+}) => {
   // Hooks
+  const { viewport } = useThree();
   const ref = useRef<THREE.Mesh>(null);
   const cardShaderMaterialRef = useRef<THREE.ShaderMaterial>(null);
   const scrollData = useScroll();
-  const { viewport } = useThree();
 
-  // TODO: remove realAngle state
-  const [realAngle, setRealAngle] = useState(0);
-  const [isSelected, setIsSelected] = useState(false);
-  const [previousScrollOffset, setPreviousScrollOffset] = useState(0);
+  const [testScrolling, setTestScrolling] = useState(0);
+
+  useFrame(() => {
+    // scrollData.offset is the current scroll position that goes from 0 to 1
+    // the viewport height is expressed in three units, in this case is 1.74977327051848 (don't know why)
+    // at the end of the scroll I have these values:
+    // pages 7.00277617681213
+    // the last (of 10) is at -10.503...
+    // so we have to consider the position of the card is based on his center
+    // the pages doesn't represent the total value of the scroll,
+    // but the total value of the scroll is pages * viewport.height
+
+    // so with that in mind, we can calculate when a card is the most near to the center of the screen
+    // or if it's completely visible
+    // or even better,
+    // the proximity to the center of the screen expressed in percentage of the height of the card
+    // that can also be a negative value,
+    // for example in the center of the screen is 0,
+    // if is a card height above the center is -1,
+    // if is two card below the center is 2,
+
+    // TODO: this is not working as expected but is not so far from the solution
+    const centerY = viewport.height / 2; // Center of the screen
+    const cardPositionY = scrollData.offset;
+    // const cardPositionY =
+    //   -index * heightWithGap + scrollData.offset * pages * viewport.height;
+    // const distanceFromCenter = (cardPositionY - centerY) / heightWithGap;
+
+    setTestScrolling(cardPositionY);
+  });
 
   const [image] = useLoader(THREE.TextureLoader, [url]);
 
-  // Data
-  const angle = (index / numberOfImages) * Math.PI * 2;
-  const shorterSide =
-    viewport.height < viewport.width ? viewport.height : viewport.width;
-  const radius = shorterSide;
-  const cardScale = shorterSide * 0.48;
-  const starCardNumber = 9;
-
-  let isScrollingDown = true;
-
-  useFrame(({ clock }, delta) => {
-    if (ref.current) {
-      // Calculate the scroll angle based on the scroll offset
-      // x : scrollOffset = Math.PI * 2 : 1
-      const scrollAngle = scrollData.offset * Math.PI * 2;
-      // TODO: This is bad - remove the state
-      setRealAngle(scrollAngle + angle);
-
-      if (scrollData.offset !== previousScrollOffset) {
-        isScrollingDown = scrollData.offset > previousScrollOffset;
-        setPreviousScrollOffset(scrollData.offset);
-      }
-
-      // Check if the scroll direction has changed
-
-      // if (scrollData.delta > 0.005) {
-      //   console.log(
-      //     "scrollDelta",
-      //     scrollData.delta,
-      //     scrollData.offset,
-      //     scrollData.eps,
-      //   );
-      // }
-
-      // Calculate the new position of the card based on the scroll angle and the adjusted angle
-      ref.current.position.x = Math.cos(scrollAngle + angle) * radius;
-      ref.current.position.y = Math.sin(scrollAngle + angle) * radius;
-      ref.current.position.z = Math.sin(scrollAngle + angle) * radius * -1.2;
-
-      // The last card is the "selected one" (the first below the horizon line is the more visible)
-      // The Horizon line is at Math.PI * 2 or 0
-      // So we need to check if the real angle is between the selected card and the next one
-      const angleIncrement = (Math.PI * 2) / numberOfImages;
-      // TODO: Maybe calculate which one to highlight based on the number of images
-
-      const starCardAngle = angleIncrement * starCardNumber;
-      const isStarCard =
-        realAngle % (Math.PI * 2) >= starCardAngle - angleIncrement / 2 &&
-        realAngle % (Math.PI * 2) <= starCardAngle + angleIncrement / 2;
-
-      if (isStarCard) {
-        setIsSelected(true);
-      } else {
-        setIsSelected(false);
-      }
-    }
-
-    if (cardShaderMaterialRef.current) {
-      cardShaderMaterialRef.current.uniforms.uTime.value += delta;
-      // cardShaderMaterialRef.current.uniforms.uTime.value += delta;
-    }
-  });
-
-  // return (
-  //   // eslint-disable-next-line jsx-a11y/alt-text
-  //   <Image
-  //     ref={ref}
-  //     url={url}
-  //     transparent
-  //     side={THREE.DoubleSide}
-  //     scale={[cardScale, cardScale * 1.33]}
-  //     rotation={[-0.05, 0, 0]}
-  //   >
-  //     {/* <Text fontSize={0.1} color="#000" position={[0, 0, 2]}>
-  //       {index} {isSelected ? "I'M THE STAR" : "BOO"} {realAngle.toFixed(2)}
-  //     </Text> */}
-  //   </Image>
-  // );
-
   return (
-    <mesh ref={ref} position={[0, 0, 0]} rotation={[0, 0, 0]}>
-      <planeGeometry args={[cardScale, cardScale * 1.33, 16, 16]} />
-      <meshStandardMaterial
-      // map={new THREE.TextureLoader().load(url)}
-      />
-
+    <mesh ref={ref} position={[0, positionY, 0]} rotation={[0, 0, 0]}>
+      <planeGeometry args={[cardWidth, cardHeight, 16, 16]} />
       <cardShaderMaterial
-        // wireframe
-        // uColor="violet"
-        scrollDelta={-1 * scrollData.delta}
-        uTime={4}
+        uFirstRow={Math.floor(Math.random() * 10) / 10}
         uTexture={image}
         ref={cardShaderMaterialRef}
         // wireframe
       />
+
+      <Text scale={0.1}> {Math.round(testScrolling * 10000) / 10000}</Text>
+      <Text scale={0.05} position={[0, -0.5, 0]}>
+        position: {Math.round(positionY * 10000) / 10000}
+      </Text>
+      <Text scale={0.05} position={[0, -0.4, 0]}>
+        globalScroll: {Math.floor(Math.random() * 10) / 10}
+      </Text>
     </mesh>
   );
 };
 
 const CardShaderMaterial = shaderMaterial(
   {
-    uTime: 0,
-    scrollDelta: 0,
-    // uColor: new THREE.Color(0xffff00),
     uTexture: new THREE.Texture(),
+    uFirstRow: 0,
   },
   // Vertex shader
   vertexShader,
@@ -194,10 +193,8 @@ declare global {
   namespace JSX {
     interface IntrinsicElements {
       cardShaderMaterial: {
-        // uColor: string;
-        scrollDelta: number;
-        uTime: number;
         uTexture: THREE.Texture;
+        uFirstRow: number;
       } & ReactThreeFiber.Object3DNode<
         THREE.ShaderMaterial,
         typeof THREE.ShaderMaterial
