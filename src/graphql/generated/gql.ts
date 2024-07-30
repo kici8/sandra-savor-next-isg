@@ -14,7 +14,7 @@ import * as types from './graphql';
  * Therefore it is highly recommended to use the babel or swc plugin for production.
  */
 const documents = {
-    "\n  query worksForHome($locale: I18NLocaleCode) {\n    works(locale: $locale) {\n      data {\n        id\n        attributes {\n          slug\n          title\n          description\n          images {\n            data {\n              id\n              attributes {\n                url\n                previewUrl\n                alternativeText\n              }\n            }\n          }\n        }\n      }\n    }\n  }\n": types.WorksForHomeDocument,
+    "\n  query worksForHome($locale: I18NLocaleCode) {\n    works(locale: $locale) {\n      data {\n        id\n        attributes {\n          slug\n          title\n          description\n          images {\n            data {\n              id\n              attributes {\n                url\n                previewUrl\n                alternativeText\n                formats\n              }\n            }\n          }\n        }\n      }\n    }\n  }\n": types.WorksForHomeDocument,
     "\n  query worksForWorkStaticParams($locale: I18NLocaleCode) {\n    works(locale: $locale) {\n      data {\n        id\n        attributes {\n          slug\n        }\n      }\n    }\n  }\n": types.WorksForWorkStaticParamsDocument,
     "\n  query worksForWork($locale: I18NLocaleCode, $slug: String) {\n    works(filters: { slug: { eq: $slug } }, locale: $locale) {\n      data {\n        id\n        attributes {\n          slug\n          title\n          description\n          dateOfCreation\n          widthInCm\n          heightInCm\n          categories {\n            data {\n              id\n              attributes {\n                title\n                slug\n              }\n            }\n          }\n          images {\n            data {\n              id\n              attributes {\n                url\n                alternativeText\n              }\n            }\n          }\n        }\n      }\n    }\n  }\n": types.WorksForWorkDocument,
 };
@@ -22,7 +22,7 @@ const documents = {
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\n  query worksForHome($locale: I18NLocaleCode) {\n    works(locale: $locale) {\n      data {\n        id\n        attributes {\n          slug\n          title\n          description\n          images {\n            data {\n              id\n              attributes {\n                url\n                previewUrl\n                alternativeText\n              }\n            }\n          }\n        }\n      }\n    }\n  }\n"): typeof import('./graphql').WorksForHomeDocument;
+export function graphql(source: "\n  query worksForHome($locale: I18NLocaleCode) {\n    works(locale: $locale) {\n      data {\n        id\n        attributes {\n          slug\n          title\n          description\n          images {\n            data {\n              id\n              attributes {\n                url\n                previewUrl\n                alternativeText\n                formats\n              }\n            }\n          }\n        }\n      }\n    }\n  }\n"): typeof import('./graphql').WorksForHomeDocument;
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

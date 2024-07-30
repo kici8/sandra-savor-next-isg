@@ -23,6 +23,7 @@ const worksForHome = graphql(/* GraphQL */ `
                 url
                 previewUrl
                 alternativeText
+                formats
               }
             }
           }
@@ -42,14 +43,16 @@ export default async function Home({
   // const data = await getData(locale);
   const data: WorksForHomeQuery = await fetchData(worksForHome, { locale });
   const t = await getTranslations();
+
+  console.log(data);
   const imagesUrl = filterFalsyValues(
     data.works?.data.map(
-      (work) => work.attributes?.images.data[0].attributes?.url,
+      (work) => work.attributes?.images.data[0].attributes?.formats.small.url,
     ) ?? [],
   );
 
   return (
-    <main className="absolute left-0 top-0 h-dvh w-full bg-red-400">
+    <main className="absolute left-0 top-0 h-dvh w-full">
       {/* <h1 className="text-5xl font-bold">{t("home.title")}</h1> */}
       {/* <p>Ciao!</p>
       <p>
@@ -77,9 +80,7 @@ export default async function Home({
           </h2>
         </Link>
       ))} */}
-      <HomeScene
-        imagesUrl={[...imagesUrl, ...imagesUrl, ...imagesUrl, imagesUrl[0]]}
-      />
+      <HomeScene imagesUrl={[...imagesUrl]} />
     </main>
   );
 }

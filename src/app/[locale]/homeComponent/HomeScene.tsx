@@ -9,13 +9,14 @@ import {
 } from "@react-three/drei";
 import {
   Canvas,
-  ReactThreeFiber,
   extend,
+  ReactThreeFiber,
   useFrame,
   useLoader,
   useThree,
 } from "@react-three/fiber";
-import { Suspense, useRef, useState } from "react";
+import { transform } from "framer-motion";
+import { Suspense, useRef } from "react";
 import * as THREE from "three";
 import fragmentShader from "./fragment.frag";
 import vertexShader from "./vertex.vert";
@@ -26,76 +27,73 @@ type HomeSceneProps = {
 
 const HomeScene: React.FC<HomeSceneProps> = ({ imagesUrl }) => {
   return (
-    <Canvas camera={{ position: [0, 0, 10], fov: 10, rotation: [0, 0, 0] }}>
+    <Canvas camera={{ position: [0, 0, 10], fov: 10 }}>
       <ambientLight />
-      <Rig imagesUrl={imagesUrl} />
+      <Suspense fallback={null}>
+        <ScrollContainer imagesUrl={imagesUrl} />
+      </Suspense>
     </Canvas>
   );
 };
 
-type RigProps = {
+type ScrollContainerProps = {
   imagesUrl: string[];
 };
 
-const Rig: React.FC<RigProps> = ({ imagesUrl }) => {
+const ScrollContainer: React.FC<ScrollContainerProps> = ({ imagesUrl }) => {
   const { viewport } = useThree();
-  // Data
-  const shorterSide =
-    viewport.height < viewport.width ? viewport.height : viewport.width;
-  const cardWidth = shorterSide * 0.48;
-  const cardHeight = cardWidth * 1.33;
-  // const cardHeight = viewport.height;
-  const gap = 0.05;
-  const heightWithGap = cardHeight + gap;
 
-  // Starts from the center of the screen
-  // pages={
-  //   (viewport.height - heightWithGap + imagesUrl.length * heightWithGap) /
-  //   viewport.height
-  // }
-  // Starts from the top of the screen
-  // pages={(heightWithGap * imagesUrl.length) / viewport.height}
-  const pages =
-    (viewport.height - heightWithGap + imagesUrl.length * heightWithGap) /
-    viewport.height;
+  const cardHeightInViewportPercentage = 0.64;
+  const gap = 0.05;
+  const cardHeight = viewport.height * cardHeightInViewportPercentage - gap;
+  const cardWidth = (cardHeight / 4) * 3;
+  const cardHeightWithGap = cardHeight + gap;
+  const pages = (imagesUrl.length * cardHeightWithGap) / viewport.height + 1;
+
+  const duplicatedImages = [...imagesUrl, ...imagesUrl];
 
   return (
-    <Suspense fallback={null}>
+    <>
       <Text scale={0.05} position={[0, 0.5, 0]}>
         wh: {Math.round(viewport.height * 10000) / 10000} center:{" "}
         {Math.round((viewport.height / 2) * 10000) / 10000}
       </Text>
       <ScrollControls
-        damping={0.1}
-        // infinite
+        // damping={0.4}
+        // maxSpeed={1.2}
+        distance={1}
+        infinite
         pages={pages}
       >
         <Scroll>
-          {imagesUrl.map((url, index) => {
+          {/* Duplicated card for infinite scroll */}
+          <Card
+            url={imagesUrl[imagesUrl.length - 1]}
+            cardWidth={cardWidth}
+            cardHeight={cardHeight}
+            heightWithGap={cardHeightWithGap}
+            pages={pages}
+            positionY={cardHeightWithGap}
+            index={imagesUrl.length}
+          />
+          {/* Card map */}
+          {duplicatedImages.map((url, index) => {
             return (
               <Card
-                // TODO: remove index from key
-                key={url + index}
+                key={url}
                 url={url}
                 cardWidth={cardWidth}
                 cardHeight={cardHeight}
-                heightWithGap={heightWithGap}
+                heightWithGap={cardHeightWithGap}
                 pages={pages}
-                // start from the center of the screen
-                positionY={-index * heightWithGap}
-                // start from the top of the screen
-                // position={[
-                //   0,
-                //   -index * heightWithGap + (viewport.height - cardHeight) / 2,
-                //   0,
-                // ]}
+                positionY={-index * cardHeightWithGap}
                 index={index}
               />
             );
           })}
         </Scroll>
       </ScrollControls>
-    </Suspense>
+    </>
   );
 };
 
@@ -119,12 +117,12 @@ const Card: React.FC<CardProps> = ({
   index,
 }) => {
   // Hooks
-  const { viewport } = useThree();
   const ref = useRef<THREE.Mesh>(null);
   const cardShaderMaterialRef = useRef<THREE.ShaderMaterial>(null);
   const scrollData = useScroll();
 
-  const [testScrolling, setTestScrolling] = useState(0);
+  const cardScrollValueRef = useRef(0.1);
+  const scrollTransformer = transform([0, 1], [0.1, 0.99]);
 
   useFrame(() => {
     // scrollData.offset is the current scroll position that goes from 0 to 1
@@ -146,33 +144,34 @@ const Card: React.FC<CardProps> = ({
     // if is two card below the center is 2,
 
     // TODO: this is not working as expected but is not so far from the solution
-    const centerY = viewport.height / 2; // Center of the screen
-    const cardPositionY = scrollData.offset;
+
+    // setTestScroll(scrollTransformer(scrollData.offset));
+    cardScrollValueRef.current = scrollTransformer(scrollData.offset);
+    if (cardShaderMaterialRef.current) {
+      cardShaderMaterialRef.current.uniforms.uFirstRow.value =
+        cardScrollValueRef.current;
+    }
+
     // const cardPositionY =
     //   -index * heightWithGap + scrollData.offset * pages * viewport.height;
     // const distanceFromCenter = (cardPositionY - centerY) / heightWithGap;
-
-    setTestScrolling(cardPositionY);
   });
 
   const [image] = useLoader(THREE.TextureLoader, [url]);
 
   return (
     <mesh ref={ref} position={[0, positionY, 0]} rotation={[0, 0, 0]}>
-      <planeGeometry args={[cardWidth, cardHeight, 16, 16]} />
+      <planeGeometry args={[cardWidth, cardHeight, 9, 12]} />
       <cardShaderMaterial
-        uFirstRow={Math.floor(Math.random() * 10) / 10}
+        uFirstRow={cardScrollValueRef.current}
         uTexture={image}
         ref={cardShaderMaterialRef}
         // wireframe
       />
 
-      <Text scale={0.1}> {Math.round(testScrolling * 10000) / 10000}</Text>
+      <Text scale={0.1}>{cardScrollValueRef.current}</Text>
       <Text scale={0.05} position={[0, -0.5, 0]}>
         position: {Math.round(positionY * 10000) / 10000}
-      </Text>
-      <Text scale={0.05} position={[0, -0.4, 0]}>
-        globalScroll: {Math.floor(Math.random() * 10) / 10}
       </Text>
     </mesh>
   );
@@ -181,7 +180,7 @@ const Card: React.FC<CardProps> = ({
 const CardShaderMaterial = shaderMaterial(
   {
     uTexture: new THREE.Texture(),
-    uFirstRow: 0,
+    uFirstRow: 0.1,
   },
   // Vertex shader
   vertexShader,
