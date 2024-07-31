@@ -48,6 +48,7 @@ export const Card: React.FC<CardProps> = ({
 
   const touchData = useRef({
     isTouching: false,
+    touchStartY: 0,
   });
 
   useEffect(() => {
