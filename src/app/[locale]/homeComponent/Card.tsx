@@ -10,6 +10,7 @@ import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import fragmentShader from "./fragment.frag";
 import vertexShader from "./vertex.vert";
+import { is } from "@react-three/fiber/dist/declarations/src/core/utils";
 
 type CardProps = {
   url: string;
@@ -43,6 +44,10 @@ export const Card: React.FC<CardProps> = ({
     ease: 0.02, // Ease factor to control the smoothness of the scroll
     current: 0, // Current scroll position
     target: 0, // Target scroll position
+  });
+
+  const touchData = useRef({
+    isTouching: false,
   });
 
   useEffect(() => {
