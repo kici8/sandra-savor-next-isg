@@ -1,4 +1,4 @@
-// these are allready defined in the shader program
+// these are already defined in the shader program
 // uniform mat4 modelMatrix;
 // uniform mat4 viewMatrix;
 // uniform mat4 projectionMatrix;
