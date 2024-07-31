@@ -1,5 +1,17 @@
 {
-  "cSpell.words": ["codegen", "nextjs", "preinstall", "Strapi", "tailwindcss"],
+  "cSpell.words": [
+    "codegen",
+    "drei",
+    "glsl",
+    "glslify",
+    "maath",
+    "mediump",
+    "nextjs",
+    "preinstall",
+    "Strapi",
+    "tailwindcss",
+    "wireframe"
+  ],
   "i18n-ally.localesPaths": ["src/messages"],
   "i18n-ally.keystyle": "nested"
 }
