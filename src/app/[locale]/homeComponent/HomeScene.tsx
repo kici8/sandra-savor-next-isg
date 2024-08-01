@@ -1,27 +1,36 @@
 "use client";
 
 import { Canvas, useThree } from "@react-three/fiber";
-import { Suspense } from "react";
+import { Suspense, useRef } from "react";
 import { Card } from "./Card";
+import { useGesture } from "@use-gesture/react";
 
 type HomeSceneProps = {
   imagesUrl: string[];
 };
 
 const HomeScene: React.FC<HomeSceneProps> = ({ imagesUrl }) => {
+  const wrapperRef = useRef<HTMLDivElement>(null);
+
   return (
-    <Canvas camera={{ position: [0, 0, 10], fov: 10 }}>
-      <ambientLight />
-      <ScrollContainer imagesUrl={imagesUrl} />
-    </Canvas>
+    <div className="h-full w-full touch-none" ref={wrapperRef}>
+      <Canvas camera={{ position: [0, 0, 10], fov: 10 }} className="touch-none">
+        <ambientLight />
+        <ScrollContainer imagesUrl={imagesUrl} containerRef={wrapperRef} />
+      </Canvas>
+    </div>
   );
 };
 
 type ScrollContainerProps = {
   imagesUrl: string[];
+  containerRef: React.RefObject<HTMLDivElement>;
 };
 
-const ScrollContainer: React.FC<ScrollContainerProps> = ({ imagesUrl }) => {
+const ScrollContainer: React.FC<ScrollContainerProps> = ({
+  imagesUrl,
+  containerRef,
+}) => {
   const { height } = useThree((state) => state.viewport);
 
   const cardHeightInViewportPercentage = 0.64;
@@ -44,6 +53,7 @@ const ScrollContainer: React.FC<ScrollContainerProps> = ({ imagesUrl }) => {
             pages={pages}
             totalNumberOfCards={imagesUrl.length}
             index={index}
+            containerRef={containerRef}
           />
         );
       })}

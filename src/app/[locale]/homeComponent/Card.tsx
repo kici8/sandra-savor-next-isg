@@ -5,13 +5,11 @@ import {
   useFrame,
   useLoader,
 } from "@react-three/fiber";
-import normalizeWheel from "normalize-wheel";
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 import * as THREE from "three";
 import fragmentShader from "./fragment.frag";
 import vertexShader from "./vertex.vert";
-import { is } from "@react-three/fiber/dist/declarations/src/core/utils";
-import { start } from "repl";
+import { useGesture } from "@use-gesture/react";
 
 type CardProps = {
   url: string;
@@ -21,6 +19,7 @@ type CardProps = {
   totalNumberOfCards: number;
   pages: number;
   index: number;
+  containerRef: React.RefObject<HTMLDivElement>;
 };
 
 export const Card: React.FC<CardProps> = ({
@@ -30,6 +29,7 @@ export const Card: React.FC<CardProps> = ({
   cardHeightWithGap,
   totalNumberOfCards,
   pages,
+  containerRef,
   index,
 }) => {
   // Hooks
@@ -39,66 +39,48 @@ export const Card: React.FC<CardProps> = ({
   const wrapAroundOffset = 1.5;
   const totalHeight = totalNumberOfCards * cardHeightWithGap;
 
-  // Handle scroll
-  const scrollData = useRef({
-    multiplier: 0.005, // Multiplier to control scroll sensitivity
-    ease: 0.02, // Ease factor to control the smoothness of the scroll
-    current: 0, // Current scroll position
-    target: 0, // Target scroll position
+  const wheelFriction = 0.025;
+  const dragFriction = 0.1;
+  const wheelMultiplier = 0.01;
+  const dragMultiplier = -0.005;
+
+  const scrollData = useRef<{
+    current: number;
+    target: number;
+    activeEvent: "wheel" | "drag";
+  }>({
+    current: 0,
+    target: 0,
+    activeEvent: "wheel",
   });
 
-  const touchData = useRef({
-    isTouching: false,
-    startY: 0,
-    friction: 0.0005,
-  });
-
-  useEffect(() => {
-    // Event handler for the wheel event
-    const onWheelHandler = (e: WheelEvent) => {
-      const { pixelY } = normalizeWheel(e); // Normalize the wheel event data
-      const { target, multiplier } = scrollData.current;
-
-      // Update the target scroll position based on the wheel movement
-      scrollData.current.target = target + pixelY * multiplier;
-    };
-
-    const onTouchDown = (e: TouchEvent) => {
-      touchData.current.isTouching = true;
-      touchData.current.startY = e.touches[0].clientY;
-    };
-    const onTouchMove = (e: TouchEvent) => {
-      if (touchData.current.isTouching) {
-        const { startY, friction } = touchData.current;
-        const { clientY } = e.touches[0];
-        const distance = (startY - clientY) * friction;
-        scrollData.current.target = scrollData.current.target + distance;
-      }
-    };
-    const onTouchUp = (e: TouchEvent) => {
-      touchData.current.isTouching = false;
-    };
-
-    // Add the wheel event listener
-    window.addEventListener("wheel", onWheelHandler);
-    // Add the touch event listeners
-    window.addEventListener("touchstart", onTouchDown);
-    window.addEventListener("touchmove", onTouchMove);
-    window.addEventListener("touchend", onTouchUp);
-
-    // Remove the wheel event listener when the component unmounts
-    return () => {
-      window.removeEventListener("wheel", onWheelHandler);
-      window.removeEventListener("touchstart", onTouchDown);
-      window.removeEventListener("touchmove", onTouchMove);
-      window.removeEventListener("touchend", onTouchUp);
-    };
-  }, []);
+  useGesture(
+    {
+      onWheel: ({ delta: [, dy] }) => {
+        scrollData.current.activeEvent = "wheel";
+        scrollData.current.target += dy * wheelMultiplier;
+      },
+      onDrag: ({ delta: [, dy] }) => {
+        if (containerRef.current) {
+          scrollData.current.activeEvent = "drag";
+          scrollData.current.target += dy * dragMultiplier;
+        }
+      },
+    },
+    {
+      target: containerRef,
+      eventOptions: {
+        passive: false,
+      },
+    },
+  );
 
   useFrame(() => {
-    const { ease, current, target } = scrollData.current;
+    const { current, target } = scrollData.current;
     // Smoothly interpolate the current scroll position towards the target
-    scrollData.current.current += (target - current) * ease;
+    const friction =
+      scrollData.current.activeEvent === "wheel" ? wheelFriction : dragFriction;
+    scrollData.current.current += (target - current) * friction;
 
     if (ref.current) {
       // Update the position of the referenced object based on the current scroll position
