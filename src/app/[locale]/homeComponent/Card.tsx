@@ -11,6 +11,7 @@ import * as THREE from "three";
 import fragmentShader from "./fragment.frag";
 import vertexShader from "./vertex.vert";
 import { is } from "@react-three/fiber/dist/declarations/src/core/utils";
+import { start } from "repl";
 
 type CardProps = {
   url: string;
@@ -48,7 +49,8 @@ export const Card: React.FC<CardProps> = ({
 
   const touchData = useRef({
     isTouching: false,
-    touchStartY: 0,
+    startY: 0,
+    friction: 0.0005,
   });
 
   useEffect(() => {
@@ -61,19 +63,35 @@ export const Card: React.FC<CardProps> = ({
       scrollData.current.target = target + pixelY * multiplier;
     };
 
-    const onTouchDown = (e: MouseEvent) => {};
-    const onTouchMove = (e: MouseEvent) => {};
-    const onTouchUp = (e: MouseEvent) => {};
+    const onTouchDown = (e: TouchEvent) => {
+      touchData.current.isTouching = true;
+      touchData.current.startY = e.touches[0].clientY;
+    };
+    const onTouchMove = (e: TouchEvent) => {
+      if (touchData.current.isTouching) {
+        const { startY, friction } = touchData.current;
+        const { clientY } = e.touches[0];
+        const distance = (startY - clientY) * friction;
+        scrollData.current.target = scrollData.current.target + distance;
+      }
+    };
+    const onTouchUp = (e: TouchEvent) => {
+      touchData.current.isTouching = false;
+    };
 
     // Add the wheel event listener
     window.addEventListener("wheel", onWheelHandler);
     // Add the touch event listeners
-    window.addEventListener("mousedown", onTouchDown);
-    window.addEventListener("mousemove", onTouchMove);
-    window.addEventListener("mouseup", onTouchUp);
+    window.addEventListener("touchstart", onTouchDown);
+    window.addEventListener("touchmove", onTouchMove);
+    window.addEventListener("touchend", onTouchUp);
+
     // Remove the wheel event listener when the component unmounts
     return () => {
       window.removeEventListener("wheel", onWheelHandler);
+      window.removeEventListener("touchstart", onTouchDown);
+      window.removeEventListener("touchmove", onTouchMove);
+      window.removeEventListener("touchend", onTouchUp);
     };
   }, []);
 
