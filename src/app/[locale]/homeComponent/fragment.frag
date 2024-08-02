@@ -1,7 +1,8 @@
 precision mediump float;
 
 uniform sampler2D uTexture;
-uniform float uFirstRow;
+uniform int uDirection;
+uniform float uSpeed;
 
 // access the UV coordinates passed from the vertex shader
 varying vec2 vUv;
@@ -9,10 +10,17 @@ varying vec2 vUv;
 void main() {
 
     vec2 uv = vUv;
-    // if(vUv.y > uFirstRow) {
-    //     uv = vec2(vUv.x, uFirstRow);
-    // } else {
-    //     uv = vec2(vUv.x, vUv.y);
+
+    if(uDirection == 1) {
+        if(vUv.y < uSpeed) {
+            uv = vec2(vUv.x, 0.0);
+        }
+    } 
+
+    // if(uDirection == -1) {
+    //     if(vUv.y > uSpeed) {
+    //         uv = vec2(vUv.x, 1);
+    //     }
     // }
 
     vec4 baseState = texture2D(uTexture, uv);

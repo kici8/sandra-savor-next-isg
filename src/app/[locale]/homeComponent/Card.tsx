@@ -1,15 +1,16 @@
-import { shaderMaterial } from "@react-three/drei";
+import { useRef, useEffect } from "react";
 import {
   extend,
   ReactThreeFiber,
   useFrame,
   useLoader,
 } from "@react-three/fiber";
-import { useRef } from "react";
+import { useGesture } from "@use-gesture/react";
 import * as THREE from "three";
+import { shaderMaterial } from "@react-three/drei";
 import fragmentShader from "./fragment.frag";
 import vertexShader from "./vertex.vert";
-import { useGesture } from "@use-gesture/react";
+import { useTransform, useMotionValue } from "framer-motion";
 
 type CardProps = {
   url: string;
@@ -32,7 +33,6 @@ export const Card: React.FC<CardProps> = ({
   containerRef,
   index,
 }) => {
-  // Hooks
   const ref = useRef<THREE.Mesh>(null);
   const cardShaderMaterialRef = useRef<THREE.ShaderMaterial>(null);
   const positionY = -index * cardHeightWithGap + cardHeightWithGap;
@@ -42,28 +42,49 @@ export const Card: React.FC<CardProps> = ({
   const wheelFriction = 0.025;
   const dragFriction = 0.1;
   const wheelMultiplier = 0.01;
-  const dragMultiplier = -0.005;
+  const dragMultiplier = 0.005;
 
   const scrollData = useRef<{
     current: number;
     target: number;
+    previous: number;
     activeEvent: "wheel" | "drag";
+    direction: 1 | -1;
   }>({
     current: 0,
     target: 0,
+    previous: 0,
     activeEvent: "wheel",
+    direction: 1,
   });
+
+  const speed = useMotionValue(0);
+  const transformedSpeed = useTransform(
+    speed,
+    [0, 10],
+    // Into these values:
+    [0, 1],
+  );
+
+  const setLastDirection = (number: number) => {
+    if (number === 0) return;
+    const direction =
+      scrollData.current.activeEvent === "wheel" ? number : -number;
+    scrollData.current.direction = direction > 0 ? 1 : -1;
+  };
 
   useGesture(
     {
       onWheel: ({ delta: [, dy] }) => {
         scrollData.current.activeEvent = "wheel";
         scrollData.current.target += dy * wheelMultiplier;
+        setLastDirection(dy);
       },
       onDrag: ({ delta: [, dy] }) => {
         if (containerRef.current) {
           scrollData.current.activeEvent = "drag";
-          scrollData.current.target += dy * dragMultiplier;
+          scrollData.current.target += dy * dragMultiplier * -1;
+          setLastDirection(dy);
         }
       },
     },
@@ -75,21 +96,37 @@ export const Card: React.FC<CardProps> = ({
     },
   );
 
-  useFrame(() => {
-    const { current, target } = scrollData.current;
-    // Smoothly interpolate the current scroll position towards the target
+  useFrame((state, delta) => {
+    const { current, target, previous } = scrollData.current;
     const friction =
       scrollData.current.activeEvent === "wheel" ? wheelFriction : dragFriction;
     scrollData.current.current += (target - current) * friction;
 
+    // Calculate speed
+    const difference = Math.abs(current - previous);
+    // Threshold to avoid js approximation errors
+    if (difference > 0.000001) {
+      speed.set(difference / delta);
+    } else {
+      speed.set(0);
+    }
+    scrollData.current.previous = current;
+
+    // Update card position
     if (ref.current) {
-      // Update the position of the referenced object based on the current scroll position
-      // And handle the wrap-around effect when the scroll position exceeds the total number of pages
       ref.current.position.y =
         ((((positionY + current + wrapAroundOffset) % totalHeight) +
           totalHeight) %
           totalHeight) -
         wrapAroundOffset;
+    }
+
+    // Update shader material
+    if (cardShaderMaterialRef.current) {
+      cardShaderMaterialRef.current.uniforms.uDirection.value =
+        scrollData.current.direction;
+      cardShaderMaterialRef.current.uniforms.uSpeed.value =
+        transformedSpeed.get();
     }
   });
 
@@ -99,10 +136,10 @@ export const Card: React.FC<CardProps> = ({
     <mesh ref={ref} position={[0, positionY, 0]} rotation={[0, 0, 0]}>
       <planeGeometry args={[cardWidth, cardHeight, 9, 12]} />
       <cardShaderMaterial
-        uFirstRow={0.5}
+        uDirection={1}
+        uSpeed={0.0}
         uTexture={image}
         ref={cardShaderMaterialRef}
-        // wireframe
       />
     </mesh>
   );
@@ -111,11 +148,10 @@ export const Card: React.FC<CardProps> = ({
 const CardShaderMaterial = shaderMaterial(
   {
     uTexture: new THREE.Texture(),
-    uFirstRow: 0.1,
+    uDirection: 1,
+    uSpeed: 0.0,
   },
-  // Vertex shader
   vertexShader,
-  // Fragment shader
   fragmentShader,
 );
 
@@ -124,7 +160,8 @@ declare global {
     interface IntrinsicElements {
       cardShaderMaterial: {
         uTexture: THREE.Texture;
-        uFirstRow: number;
+        uDirection: number;
+        uSpeed: number;
       } & ReactThreeFiber.Object3DNode<
         THREE.ShaderMaterial,
         typeof THREE.ShaderMaterial

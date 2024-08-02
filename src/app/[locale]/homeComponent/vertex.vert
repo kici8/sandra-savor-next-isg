@@ -7,7 +7,8 @@
 precision mediump float;
 // varying is used to pass data from the vertex shader to the fragment shader
 varying vec2 vUv;
-uniform float uFirstRow;
+uniform int uDirection;
+uniform float uSpeed;
 
 void main() {
     // vUv is a varying vec2 that contains the UV coordinates of the vertex
