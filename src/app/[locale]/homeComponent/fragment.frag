@@ -8,22 +8,10 @@ uniform float uSpeed;
 varying vec2 vUv;
 
 void main() {
-
-    vec2 uv = vUv;
-
-    if(uDirection == 1) {
-        if(vUv.y < uSpeed) {
-            uv = vec2(vUv.x, 0.0);
-        }
-    } 
-
-    // if(uDirection == -1) {
-    //     if(vUv.y > uSpeed) {
-    //         uv = vec2(vUv.x, 1);
-    //     }
-    // }
-
+    vec2 uv = vUv; // Iniziamo con le coordinate UV originali
     vec4 baseState = texture2D(uTexture, uv);
+
+    // TODO 
 
     gl_FragColor = vec4(baseState.rgb, 1.0);
 }
