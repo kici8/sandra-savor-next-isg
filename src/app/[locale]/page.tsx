@@ -80,7 +80,7 @@ export default async function Home({
           </h2>
         </Link>
       ))} */}
-      <HomeScene imagesUrl={[...imagesUrl]} />
+      <HomeScene imagesUrl={imagesUrl} />
     </main>
   );
 }

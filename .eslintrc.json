@@ -2,9 +2,10 @@
   "extends": [
     "next/core-web-vitals",
     "prettier",
-    "plugin:react-hooks/recommended"
+    "plugin:react-hooks/recommended",
+    "plugin:@react-three/recommended"
   ],
-  "plugins": ["react-hooks"],
+  "plugins": ["react-hooks", "@react-three"],
   "rules": {
     "react-hooks/rules-of-hooks": "error",
     "react-hooks/exhaustive-deps": "warn"

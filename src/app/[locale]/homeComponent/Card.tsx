@@ -1,4 +1,10 @@
-import { useRef, useEffect } from "react";
+import {
+  CurveModifier,
+  CurveModifierRef,
+  Line,
+  shaderMaterial,
+  Text,
+} from "@react-three/drei";
 import {
   extend,
   ReactThreeFiber,
@@ -6,11 +12,11 @@ import {
   useLoader,
 } from "@react-three/fiber";
 import { useGesture } from "@use-gesture/react";
+import { useMotionValue, useTransform } from "framer-motion";
+import { useRef } from "react";
 import * as THREE from "three";
-import { shaderMaterial } from "@react-three/drei";
 import fragmentShader from "./fragment.frag";
 import vertexShader from "./vertex.vert";
-import { useTransform, useMotionValue } from "framer-motion";
 
 type CardProps = {
   url: string;
@@ -33,14 +39,20 @@ export const Card: React.FC<CardProps> = ({
   containerRef,
   index,
 }) => {
-  const ref = useRef<THREE.Mesh>(null);
+  const cardGroupRef = useRef<THREE.Group>(null);
+  const cardMeshRef = useRef<THREE.Mesh>(null);
   const cardShaderMaterialRef = useRef<THREE.ShaderMaterial>(null);
+  const isDragging = useRef(false);
+  const curveRef = useRef<CurveModifierRef>(null);
   const positionY = -index * cardHeightWithGap + cardHeightWithGap;
+  const xOffset = 0.2;
+  const positionX = xOffset * positionY;
+
   const wrapAroundOffset = 1.5;
   const totalHeight = totalNumberOfCards * cardHeightWithGap;
 
-  const wheelFriction = 0.025;
-  const dragFriction = 0.1;
+  const wheelFriction = 0.03;
+  const dragFriction = 0.03;
   const wheelMultiplier = 0.01;
   const dragMultiplier = 0.005;
 
@@ -58,6 +70,8 @@ export const Card: React.FC<CardProps> = ({
     direction: 1,
   });
 
+  // GESTURE AND SNAP
+  const snapTarget = useRef<number | null>(null);
   const speed = useMotionValue(0);
   const transformedSpeed = useTransform(
     speed,
@@ -65,6 +79,20 @@ export const Card: React.FC<CardProps> = ({
     // Into these values:
     [0, 1],
   );
+
+  // CURVE
+  const curveNumPoints = 12;
+  const curveRadius = cardWidth / 2;
+
+  const curvePoints = Array.from({ length: curveNumPoints }, (_, i) => {
+    const angle = (i / curveNumPoints) * Math.PI * 2;
+    const v = new THREE.Vector3(
+      Math.cos(angle) * curveRadius,
+      Math.sin(angle) * curveRadius,
+      0,
+    );
+    return v;
+  });
 
   const setLastDirection = (number: number) => {
     if (number === 0) return;
@@ -78,9 +106,11 @@ export const Card: React.FC<CardProps> = ({
       onWheel: ({ delta: [, dy] }) => {
         scrollData.current.activeEvent = "wheel";
         scrollData.current.target += dy * wheelMultiplier;
+        curveRef.current?.moveAlongCurve(0.01);
         setLastDirection(dy);
       },
-      onDrag: ({ delta: [, dy] }) => {
+      onDrag: ({ dragging, delta: [, dy] }) => {
+        isDragging.current = dragging || false;
         if (containerRef.current) {
           scrollData.current.activeEvent = "drag";
           scrollData.current.target += dy * dragMultiplier * -1;
@@ -104,7 +134,6 @@ export const Card: React.FC<CardProps> = ({
 
     // Calculate speed
     const difference = Math.abs(current - previous);
-    // Threshold to avoid js approximation errors
     if (difference > 0.000001) {
       speed.set(difference / delta);
     } else {
@@ -112,14 +141,79 @@ export const Card: React.FC<CardProps> = ({
     }
     scrollData.current.previous = current;
 
-    // Update card position
-    if (ref.current) {
-      ref.current.position.y =
+    // SNAP LOGIC
+    const snapThreshold = 0.05;
+
+    if (speed.get() < snapThreshold && !isDragging.current) {
+      if (snapTarget.current === null) {
+        // Compute the closest card only once
+        const centerPositions = Array.from(
+          { length: totalNumberOfCards },
+          (_, i) => {
+            const base = -i * cardHeightWithGap + cardHeightWithGap;
+            return (
+              ((((base + current + wrapAroundOffset) % totalHeight) +
+                totalHeight) %
+                totalHeight) -
+              wrapAroundOffset
+            );
+          },
+        );
+        let closest = centerPositions[0];
+        let minDist = Math.abs(closest);
+        let closestIndex = 0;
+        centerPositions.forEach((pos, i) => {
+          const dist = Math.abs(pos);
+          if (dist < minDist) {
+            minDist = dist;
+            closest = pos;
+            closestIndex = i;
+          }
+        });
+        // Store the snap target
+        snapTarget.current = scrollData.current.current + -closest;
+      }
+      // Snap towards the stored target
+      scrollData.current.target = snapTarget.current;
+    } else {
+      // If user interacts or speed increases, reset snapTarget
+      snapTarget.current = null;
+    }
+
+    // Update card
+    if (cardGroupRef.current) {
+      // Position
+      const y =
         ((((positionY + current + wrapAroundOffset) % totalHeight) +
           totalHeight) %
           totalHeight) -
         wrapAroundOffset;
+      const x = 0.2 * y;
+      cardGroupRef.current.position.y = y;
+      cardGroupRef.current.position.x = x;
+      // Rotation
+      cardGroupRef.current.rotation.y = y;
     }
+
+    // if (cardMeshRef.current) {
+    //   // Update mesh to create a smooth curved effect
+    //   const meshPositionArray =
+    //     cardMeshRef.current.geometry.attributes.position.array;
+
+    //   for (let i = 0; i < meshPositionArray.length; i += 3) {
+    //     const x = meshPositionArray[i];
+    //     // TODO: test
+    //     const y = meshPositionArray[i + 1];
+    //     const z = meshPositionArray[i + 2];
+
+    //     let xz = new THREE.Vector2(x, z).normalize().multiplyScalar(1.2);
+
+    //     meshPositionArray[i] = xz.x;
+    //     meshPositionArray[i + 1] = y;
+    //     meshPositionArray[i + 2] = xz.y;
+    //   }
+    //   cardMeshRef.current.geometry.attributes.position.needsUpdate = true;
+    // }
 
     // Update shader material
     if (cardShaderMaterialRef.current) {
@@ -133,15 +227,24 @@ export const Card: React.FC<CardProps> = ({
   const [image] = useLoader(THREE.TextureLoader, [url]);
 
   return (
-    <mesh ref={ref} position={[0, positionY, 0]} rotation={[0, 0, 0]}>
-      <planeGeometry args={[cardWidth, cardHeight, 9, 12]} />
-      <cardShaderMaterial
-        uDirection={1}
-        uSpeed={0.0}
-        uTexture={image}
-        ref={cardShaderMaterialRef}
-      />
-    </mesh>
+    <>
+      <axesHelper />
+      <group ref={cardGroupRef} position={[positionX, positionY, 0]}>
+        <Line points={curvePoints} />
+        <mesh position={[0, 0, 0.2]} ref={cardMeshRef}>
+          <planeGeometry args={[cardWidth, cardHeight, 24, 32]} />
+          <cardShaderMaterial
+            uDirection={1}
+            uSpeed={0.0}
+            uTexture={image}
+            uRectangleWidth={cardWidth}
+            ref={cardShaderMaterialRef}
+            wireframe
+          />
+        </mesh>
+        <Text position={[0, 0, 0.22]}>{index}</Text>
+      </group>
+    </>
   );
 };
 
@@ -150,6 +253,7 @@ const CardShaderMaterial = shaderMaterial(
     uTexture: new THREE.Texture(),
     uDirection: 1,
     uSpeed: 0.0,
+    uRectangleWidth: 0.4,
   },
   vertexShader,
   fragmentShader,
@@ -162,6 +266,7 @@ declare global {
         uTexture: THREE.Texture;
         uDirection: number;
         uSpeed: number;
+        uRectangleWidth: number;
       } & ReactThreeFiber.Object3DNode<
         THREE.ShaderMaterial,
         typeof THREE.ShaderMaterial
