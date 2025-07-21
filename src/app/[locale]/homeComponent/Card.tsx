@@ -211,16 +211,30 @@ export const Card: React.FC<CardProps> = ({
           cardMeshRef.current.geometry.attributes.position.array;
 
         for (let i = 0; i < meshPositionArray.length; i += 3) {
-          // Bend the mesh
-          const xNorm = originalPositions.current[i] / (cardWidth / 2);
-          const maxAngle = THREE.MathUtils.degToRad(60);
-          const radius = cardWidth / maxAngle / 2; // Ensures the arc fits the width
+          const x = originalPositions.current[i];
+          const y = originalPositions.current[i + 1];
+          const z = originalPositions.current[i + 2];
+
+          // Rotate the point by tot deg around the x axis
+          const angle = THREE.MathUtils.degToRad(30);
+          const xr = x * Math.cos(angle) - y * Math.sin(angle);
+          const yr = x * Math.sin(angle) + y * Math.cos(angle);
+
+          // Apply cylindrical mapping along the new X axis
+          const xNorm = xr / (cardWidth / 2);
+          const maxAngle = THREE.MathUtils.degToRad(90);
+          const radius = cardWidth / maxAngle / 2;
           const theta = xNorm * maxAngle;
-          const newX = radius * Math.sin(theta);
+
+          const newXr = radius * Math.sin(theta);
           const newZ = -radius * (1.0 - Math.cos(theta));
 
-          // Update with the bend
+          // Rotate back by +45° around Z
+          const newX = newXr * Math.cos(-angle) - yr * Math.sin(-angle);
+          const newY = newXr * Math.sin(-angle) + yr * Math.cos(-angle);
+
           meshPositionArray[i] = newX;
+          meshPositionArray[i + 1] = newY;
           meshPositionArray[i + 2] = newZ;
         }
         cardMeshRef.current.geometry.attributes.position.needsUpdate = true;
