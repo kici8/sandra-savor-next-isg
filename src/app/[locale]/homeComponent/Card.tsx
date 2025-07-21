@@ -1,5 +1,4 @@
 import {
-  CurveModifier,
   CurveModifierRef,
   Line,
   shaderMaterial,
@@ -72,6 +71,8 @@ export const Card: React.FC<CardProps> = ({
 
   // GESTURE AND SNAP
   const snapTarget = useRef<number | null>(null);
+  const originalPositions = useRef<Float32Array | null>(null);
+  const isOriginalPositionCreated = useRef(false);
   const speed = useMotionValue(0);
   const transformedSpeed = useTransform(
     speed,
@@ -180,7 +181,7 @@ export const Card: React.FC<CardProps> = ({
       snapTarget.current = null;
     }
 
-    // Update card
+    // UPDATE CARD
     if (cardGroupRef.current) {
       // Position
       const y =
@@ -195,25 +196,36 @@ export const Card: React.FC<CardProps> = ({
       cardGroupRef.current.rotation.y = y;
     }
 
-    // if (cardMeshRef.current) {
-    //   // Update mesh to create a smooth curved effect
-    //   const meshPositionArray =
-    //     cardMeshRef.current.geometry.attributes.position.array;
+    if (cardMeshRef.current) {
+      if (!isOriginalPositionCreated.current) {
+        // Create original positions only once
+        originalPositions.current = Float32Array.from(
+          cardMeshRef.current.geometry.attributes.position.array,
+        );
+        isOriginalPositionCreated.current = true;
+      }
 
-    //   for (let i = 0; i < meshPositionArray.length; i += 3) {
-    //     const x = meshPositionArray[i];
-    //     // TODO: test
-    //     const y = meshPositionArray[i + 1];
-    //     const z = meshPositionArray[i + 2];
+      if (isOriginalPositionCreated && originalPositions.current) {
+        // Update mesh to create a smooth curved effect
+        const meshPositionArray =
+          cardMeshRef.current.geometry.attributes.position.array;
 
-    //     let xz = new THREE.Vector2(x, z).normalize().multiplyScalar(1.2);
+        for (let i = 0; i < meshPositionArray.length; i += 3) {
+          // Bend the mesh
+          const xNorm = originalPositions.current[i] / (cardWidth / 2);
+          const maxAngle = THREE.MathUtils.degToRad(60);
+          const radius = cardWidth / maxAngle / 2; // Ensures the arc fits the width
+          const theta = xNorm * maxAngle;
+          const newX = radius * Math.sin(theta);
+          const newZ = -radius * (1.0 - Math.cos(theta));
 
-    //     meshPositionArray[i] = xz.x;
-    //     meshPositionArray[i + 1] = y;
-    //     meshPositionArray[i + 2] = xz.y;
-    //   }
-    //   cardMeshRef.current.geometry.attributes.position.needsUpdate = true;
-    // }
+          // Update with the bend
+          meshPositionArray[i] = newX;
+          meshPositionArray[i + 2] = newZ;
+        }
+        cardMeshRef.current.geometry.attributes.position.needsUpdate = true;
+      }
+    }
 
     // Update shader material
     if (cardShaderMaterialRef.current) {
@@ -230,7 +242,6 @@ export const Card: React.FC<CardProps> = ({
     <>
       <axesHelper />
       <group ref={cardGroupRef} position={[positionX, positionY, 0]}>
-        <Line points={curvePoints} />
         <mesh position={[0, 0, 0.2]} ref={cardMeshRef}>
           <planeGeometry args={[cardWidth, cardHeight, 24, 32]} />
           <cardShaderMaterial
@@ -239,10 +250,9 @@ export const Card: React.FC<CardProps> = ({
             uTexture={image}
             uRectangleWidth={cardWidth}
             ref={cardShaderMaterialRef}
-            wireframe
+            side={THREE.DoubleSide}
           />
         </mesh>
-        <Text position={[0, 0, 0.22]}>{index}</Text>
       </group>
     </>
   );
