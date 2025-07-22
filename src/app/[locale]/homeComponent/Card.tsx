@@ -73,6 +73,7 @@ export const Card: React.FC<CardProps> = ({
   const snapTarget = useRef<number | null>(null);
   const originalPositions = useRef<Float32Array | null>(null);
   const isOriginalPositionCreated = useRef(false);
+  const smoothedCurvature = useRef(0);
   const speed = useMotionValue(0);
   const transformedSpeed = useTransform(
     speed,
@@ -132,6 +133,11 @@ export const Card: React.FC<CardProps> = ({
     const friction =
       scrollData.current.activeEvent === "wheel" ? wheelFriction : dragFriction;
     scrollData.current.current += (target - current) * friction;
+
+    const smoothCurvatureTarget = transformedSpeed.get();
+    // Cambia 0.1 in un valore più piccolo per un easing più lento
+    smoothedCurvature.current +=
+      (smoothCurvatureTarget - smoothedCurvature.current) * 0.04;
 
     // Calculate speed
     const difference = Math.abs(current - previous);
@@ -215,21 +221,27 @@ export const Card: React.FC<CardProps> = ({
           const y = originalPositions.current[i + 1];
           const z = originalPositions.current[i + 2];
 
-          // Rotate the point by tot deg around the x axis
-          const angle = THREE.MathUtils.degToRad(30);
+          // Ruota il punto di -45° sull'asse Z per la diagonale
+          const angle = Math.PI / 4;
           const xr = x * Math.cos(angle) - y * Math.sin(angle);
           const yr = x * Math.sin(angle) + y * Math.cos(angle);
 
-          // Apply cylindrical mapping along the new X axis
+          // Curvatura proporzionale alla velocità
+          const curvature = smoothedCurvature.current; // 0 = piatto, 1 = max curva
+          const maxAngle = THREE.MathUtils.degToRad(90) * curvature;
+          const isFlat = maxAngle === 0;
+          const radius = isFlat ? 1 : cardWidth / maxAngle / 2;
           const xNorm = xr / (cardWidth / 2);
-          const maxAngle = THREE.MathUtils.degToRad(90);
-          const radius = cardWidth / maxAngle / 2;
           const theta = xNorm * maxAngle;
 
-          const newXr = radius * Math.sin(theta);
-          const newZ = -radius * (1.0 - Math.cos(theta));
+          let newXr = xr;
+          let newZ = z;
+          if (!isFlat) {
+            newXr = radius * Math.sin(theta);
+            newZ = -radius * (1.0 - Math.cos(theta));
+          }
 
-          // Rotate back by +45° around Z
+          // Ruota indietro di +45°
           const newX = newXr * Math.cos(-angle) - yr * Math.sin(-angle);
           const newY = newXr * Math.sin(-angle) + yr * Math.cos(-angle);
 
