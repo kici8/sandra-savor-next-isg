@@ -187,19 +187,20 @@ export const Card: React.FC<CardProps> = ({
       snapTarget.current = null;
     }
 
+    // ROTATION
+    const rotationY =
+      ((((positionY + current + wrapAroundOffset) % totalHeight) +
+        totalHeight) %
+        totalHeight) -
+      wrapAroundOffset;
+
     // UPDATE CARD
     if (cardGroupRef.current) {
-      // Position
-      const y =
-        ((((positionY + current + wrapAroundOffset) % totalHeight) +
-          totalHeight) %
-          totalHeight) -
-        wrapAroundOffset;
-      const x = 0.2 * y;
-      cardGroupRef.current.position.y = y;
+      const x = 0.2 * rotationY;
+      cardGroupRef.current.position.y = rotationY;
       cardGroupRef.current.position.x = x;
       // Rotation
-      cardGroupRef.current.rotation.y = y;
+      cardGroupRef.current.rotation.y = rotationY;
     }
 
     if (cardMeshRef.current) {
@@ -216,6 +217,23 @@ export const Card: React.FC<CardProps> = ({
         const meshPositionArray =
           cardMeshRef.current.geometry.attributes.position.array;
 
+        // Calcola la curvatura statica in base a rotationY
+        const maxStaticCurvature = 0.5; // quanto vuoi che si pieghino le card laterali (0.5 = metà della curva massima)
+        const normalizedRotationY = Math.min(Math.abs(rotationY) / Math.PI, 1); // normalizza tra 0 e 1
+        const staticCurvature = maxStaticCurvature * normalizedRotationY;
+
+        // Curvatura dinamica dalla velocità
+        const dynamicCurvature = smoothedCurvature.current;
+
+        // Curvatura totale
+        const curvature = Math.min(staticCurvature + dynamicCurvature, 1);
+
+        // Poi usa curvature come prima:
+        const maxAngle = THREE.MathUtils.degToRad(90) * curvature;
+        const minAngle = 1e-4;
+        const safeMaxAngle = Math.max(maxAngle, minAngle);
+        const radius = cardWidth / safeMaxAngle / 2;
+
         for (let i = 0; i < meshPositionArray.length; i += 3) {
           const x = originalPositions.current[i];
           const y = originalPositions.current[i + 1];
@@ -226,22 +244,13 @@ export const Card: React.FC<CardProps> = ({
           const xr = x * Math.cos(angle) - y * Math.sin(angle);
           const yr = x * Math.sin(angle) + y * Math.cos(angle);
 
-          // Curvatura proporzionale alla velocità
-          const curvature = smoothedCurvature.current; // 0 = piatto, 1 = max curva
-          const maxAngle = THREE.MathUtils.degToRad(90) * curvature;
-          const isFlat = maxAngle === 0;
-          const radius = isFlat ? 1 : cardWidth / maxAngle / 2;
           const xNorm = xr / (cardWidth / 2);
-          const theta = xNorm * maxAngle;
+          const theta = xNorm * safeMaxAngle;
 
-          let newXr = xr;
-          let newZ = z;
-          if (!isFlat) {
-            newXr = radius * Math.sin(theta);
-            newZ = -radius * (1.0 - Math.cos(theta));
-          }
+          const newXr = radius * Math.sin(theta);
+          const newZ = -radius * (1.0 - Math.cos(theta));
 
-          // Ruota indietro di +45°
+          // Ruota indietro
           const newX = newXr * Math.cos(-angle) - yr * Math.sin(-angle);
           const newY = newXr * Math.sin(-angle) + yr * Math.cos(-angle);
 
@@ -265,22 +274,19 @@ export const Card: React.FC<CardProps> = ({
   const [image] = useLoader(THREE.TextureLoader, [url]);
 
   return (
-    <>
-      <axesHelper />
-      <group ref={cardGroupRef} position={[positionX, positionY, 0]}>
-        <mesh position={[0, 0, 0.2]} ref={cardMeshRef}>
-          <planeGeometry args={[cardWidth, cardHeight, 24, 32]} />
-          <cardShaderMaterial
-            uDirection={1}
-            uSpeed={0.0}
-            uTexture={image}
-            uRectangleWidth={cardWidth}
-            ref={cardShaderMaterialRef}
-            side={THREE.DoubleSide}
-          />
-        </mesh>
-      </group>
-    </>
+    <group ref={cardGroupRef} position={[positionX, positionY, 0]}>
+      <mesh position={[0, 0, 0.2]} ref={cardMeshRef}>
+        <planeGeometry args={[cardWidth, cardHeight, 24, 32]} />
+        <cardShaderMaterial
+          uDirection={1}
+          uSpeed={0.0}
+          uTexture={image}
+          uRectangleWidth={cardWidth}
+          ref={cardShaderMaterialRef}
+          side={THREE.DoubleSide}
+        />
+      </mesh>
+    </group>
   );
 };
 
