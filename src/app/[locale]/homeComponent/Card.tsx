@@ -1,9 +1,4 @@
-import {
-  CurveModifierRef,
-  Line,
-  shaderMaterial,
-  Text,
-} from "@react-three/drei";
+import { CurveModifierRef, shaderMaterial } from "@react-three/drei";
 import {
   extend,
   ReactThreeFiber,
@@ -75,26 +70,7 @@ export const Card: React.FC<CardProps> = ({
   const isOriginalPositionCreated = useRef(false);
   const smoothedCurvature = useRef(0);
   const speed = useMotionValue(0);
-  const transformedSpeed = useTransform(
-    speed,
-    [0, 10],
-    // Into these values:
-    [0, 1],
-  );
-
-  // CURVE
-  const curveNumPoints = 12;
-  const curveRadius = cardWidth / 2;
-
-  const curvePoints = Array.from({ length: curveNumPoints }, (_, i) => {
-    const angle = (i / curveNumPoints) * Math.PI * 2;
-    const v = new THREE.Vector3(
-      Math.cos(angle) * curveRadius,
-      Math.sin(angle) * curveRadius,
-      0,
-    );
-    return v;
-  });
+  const transformedSpeed = useTransform(speed, [0, 10], [0, 1]);
 
   const setLastDirection = (number: number) => {
     if (number === 0) return;
@@ -128,20 +104,16 @@ export const Card: React.FC<CardProps> = ({
     },
   );
 
-  useFrame((state, delta) => {
+  useFrame((_state, delta) => {
+    // Control the scroll speed
+    // TODO: maybe we need a way for normalize speed/friction for trackpad?
     const { current, target, previous } = scrollData.current;
     const friction =
       scrollData.current.activeEvent === "wheel" ? wheelFriction : dragFriction;
     scrollData.current.current += (target - current) * friction;
 
-    const smoothCurvatureTarget = transformedSpeed.get();
-    // Cambia 0.1 in un valore più piccolo per un easing più lento
-    smoothedCurvature.current +=
-      (smoothCurvatureTarget - smoothedCurvature.current) * 0.04;
-
-    // Calculate speed
     const difference = Math.abs(current - previous);
-    if (difference > 0.000001) {
+    if (difference > 0.0001) {
       speed.set(difference / delta);
     } else {
       speed.set(0);
@@ -150,7 +122,6 @@ export const Card: React.FC<CardProps> = ({
 
     // SNAP LOGIC
     const snapThreshold = 0.05;
-
     if (speed.get() < snapThreshold && !isDragging.current) {
       if (snapTarget.current === null) {
         // Compute the closest card only once
@@ -194,18 +165,26 @@ export const Card: React.FC<CardProps> = ({
         totalHeight) -
       wrapAroundOffset;
 
-    // UPDATE CARD
+    // UPDATE CARD GROUP
     if (cardGroupRef.current) {
-      const x = 0.2 * rotationY;
+      const x = 0.12 * rotationY;
       cardGroupRef.current.position.y = rotationY;
       cardGroupRef.current.position.x = x;
       // Rotation
       cardGroupRef.current.rotation.y = rotationY;
     }
 
+    // UPDATE MESH
+
+    // get the curvature from the speed
+    const smoothCurvatureTarget = transformedSpeed.get();
+    smoothedCurvature.current +=
+      (smoothCurvatureTarget - smoothedCurvature.current) * 0.02;
+
     if (cardMeshRef.current) {
       if (!isOriginalPositionCreated.current) {
-        // Create original positions only once
+        // Create original positions only once (copy without the reference)
+        // I think I'm updating the cardMeshRef position in a wrong way, but updating the original positions works
         originalPositions.current = Float32Array.from(
           cardMeshRef.current.geometry.attributes.position.array,
         );
@@ -213,33 +192,25 @@ export const Card: React.FC<CardProps> = ({
       }
 
       if (isOriginalPositionCreated && originalPositions.current) {
-        // Update mesh to create a smooth curved effect
         const meshPositionArray =
           cardMeshRef.current.geometry.attributes.position.array;
-
-        // Calcola la curvatura statica in base a rotationY
-        const maxStaticCurvature = 0.5; // quanto vuoi che si pieghino le card laterali (0.5 = metà della curva massima)
-        const normalizedRotationY = Math.min(Math.abs(rotationY) / Math.PI, 1); // normalizza tra 0 e 1
+        const maxStaticCurvature = 0.5;
+        const normalizedRotationY = Math.min(Math.abs(rotationY) / Math.PI, 1);
         const staticCurvature = maxStaticCurvature * normalizedRotationY;
-
-        // Curvatura dinamica dalla velocità
-        const dynamicCurvature = smoothedCurvature.current;
-
-        // Curvatura totale
-        const curvature = Math.min(staticCurvature + dynamicCurvature, 1);
-
-        // Poi usa curvature come prima:
+        const curvature = Math.min(
+          staticCurvature + smoothedCurvature.current,
+          1,
+        );
         const maxAngle = THREE.MathUtils.degToRad(90) * curvature;
-        const minAngle = 1e-4;
+        const minAngle = 0.0001;
         const safeMaxAngle = Math.max(maxAngle, minAngle);
         const radius = cardWidth / safeMaxAngle / 2;
 
         for (let i = 0; i < meshPositionArray.length; i += 3) {
+          // Bend the card
           const x = originalPositions.current[i];
           const y = originalPositions.current[i + 1];
-          const z = originalPositions.current[i + 2];
-
-          // Ruota il punto di -45° sull'asse Z per la diagonale
+          // const z = originalPositions.current[i + 2];
           const angle = Math.PI / 4;
           const xr = x * Math.cos(angle) - y * Math.sin(angle);
           const yr = x * Math.sin(angle) + y * Math.cos(angle);
@@ -250,14 +221,24 @@ export const Card: React.FC<CardProps> = ({
           const newXr = radius * Math.sin(theta);
           const newZ = -radius * (1.0 - Math.cos(theta));
 
-          // Ruota indietro
-          const newX = newXr * Math.cos(-angle) - yr * Math.sin(-angle);
-          const newY = newXr * Math.sin(-angle) + yr * Math.cos(-angle);
+          // wind
+          const time = performance.now() * 0.001;
+          const windStrength = 0.02;
+          const wind =
+            Math.sin(time * 2 + x * 3 + y * 2) * windStrength +
+            Math.cos(time * 1.5 + y * 2) * windStrength * 0.5;
+          const windX = wind * 0.2;
+          const windY = wind * 0.2;
+          const windedZ = newZ + wind;
 
+          // Update all
+          const newX = newXr * Math.cos(-angle) - yr * Math.sin(-angle) + windX;
+          const newY = newXr * Math.sin(-angle) + yr * Math.cos(-angle) + windY;
           meshPositionArray[i] = newX;
           meshPositionArray[i + 1] = newY;
-          meshPositionArray[i + 2] = newZ;
+          meshPositionArray[i + 2] = windedZ;
         }
+        // Call the update
         cardMeshRef.current.geometry.attributes.position.needsUpdate = true;
       }
     }

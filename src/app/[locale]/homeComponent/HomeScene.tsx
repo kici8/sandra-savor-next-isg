@@ -33,7 +33,7 @@ const ScrollContainer: React.FC<ScrollContainerProps> = ({
 }) => {
   const { height } = useThree((state) => state.viewport);
 
-  const cardHeightInViewportPercentage = 0.64;
+  const cardHeightInViewportPercentage = 0.56;
   const gap = 0.05;
   const cardHeight = height * cardHeightInViewportPercentage - gap;
   const cardWidth = (cardHeight / 4) * 3;
