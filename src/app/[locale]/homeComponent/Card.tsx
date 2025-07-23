@@ -1,16 +1,9 @@
-import { CurveModifierRef, shaderMaterial } from "@react-three/drei";
-import {
-  extend,
-  ReactThreeFiber,
-  useFrame,
-  useLoader,
-} from "@react-three/fiber";
+import { CurveModifierRef, Image } from "@react-three/drei";
+import { useFrame, useLoader } from "@react-three/fiber";
 import { useGesture } from "@use-gesture/react";
 import { useMotionValue, useTransform } from "framer-motion";
 import { useRef } from "react";
 import * as THREE from "three";
-import fragmentShader from "./fragment.frag";
-import vertexShader from "./vertex.vert";
 
 type CardProps = {
   url: string;
@@ -256,46 +249,15 @@ export const Card: React.FC<CardProps> = ({
 
   return (
     <group ref={cardGroupRef} position={[positionX, positionY, 0]}>
-      <mesh position={[0, 0, 0.2]} ref={cardMeshRef}>
+      {/* eslint-disable-next-line jsx-a11y/alt-text */}
+      <Image
+        url={url}
+        position={[0, 0, 0.2]}
+        side={THREE.DoubleSide}
+        ref={cardMeshRef}
+      >
         <planeGeometry args={[cardWidth, cardHeight, 24, 32]} />
-        <cardShaderMaterial
-          uDirection={1}
-          uSpeed={0.0}
-          uTexture={image}
-          uRectangleWidth={cardWidth}
-          ref={cardShaderMaterialRef}
-          side={THREE.DoubleSide}
-        />
-      </mesh>
+      </Image>
     </group>
   );
 };
-
-const CardShaderMaterial = shaderMaterial(
-  {
-    uTexture: new THREE.Texture(),
-    uDirection: 1,
-    uSpeed: 0.0,
-    uRectangleWidth: 0.4,
-  },
-  vertexShader,
-  fragmentShader,
-);
-
-declare global {
-  namespace JSX {
-    interface IntrinsicElements {
-      cardShaderMaterial: {
-        uTexture: THREE.Texture;
-        uDirection: number;
-        uSpeed: number;
-        uRectangleWidth: number;
-      } & ReactThreeFiber.Object3DNode<
-        THREE.ShaderMaterial,
-        typeof THREE.ShaderMaterial
-      >;
-    }
-  }
-}
-
-extend({ CardShaderMaterial });

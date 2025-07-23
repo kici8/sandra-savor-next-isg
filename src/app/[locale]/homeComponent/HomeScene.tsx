@@ -3,7 +3,6 @@
 import { Canvas, useThree } from "@react-three/fiber";
 import { Suspense, useRef } from "react";
 import { Card } from "./Card";
-import { useGesture } from "@use-gesture/react";
 
 type HomeSceneProps = {
   imagesUrl: string[];
