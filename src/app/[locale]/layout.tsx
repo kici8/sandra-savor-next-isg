@@ -69,9 +69,9 @@ export default async function RootLayout({
                   </span>
                 </Link>
               </li>
-              <li>
+              {/* <li>
                 <Link href={`/${locale}/works`}>WORKS</Link>
-              </li>
+              </li> */}
               <li>
                 <Link href={`/${locale}/about`}>ABOUT</Link>
               </li>
