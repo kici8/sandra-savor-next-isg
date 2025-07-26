@@ -50,7 +50,6 @@ const ScrollContainer: React.FC<ScrollContainerProps> = ({
   const cardHeight = height * cardHeightInViewportPercentage - gap;
   const cardWidth = (cardHeight / 4) * 3;
   const cardHeightWithGap = cardHeight + gap;
-  const pages = (imagesUrl.length * cardHeightWithGap) / height + 1;
 
   return (
     <Suspense fallback={null}>
@@ -62,7 +61,6 @@ const ScrollContainer: React.FC<ScrollContainerProps> = ({
             cardWidth={cardWidth}
             cardHeight={cardHeight}
             cardHeightWithGap={cardHeightWithGap}
-            pages={pages}
             totalNumberOfCards={imagesUrl.length}
             index={index}
             containerRef={containerRef}

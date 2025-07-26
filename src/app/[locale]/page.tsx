@@ -1,11 +1,10 @@
 import { fetchData } from "@/graphql/fetchData";
 import { graphql } from "@/graphql/generated/gql";
 import { WorksForHomeQuery } from "@/graphql/generated/graphql";
+import { filterFalsyValues } from "@/helper/filterFalsyValues";
 import { getTranslations, unstable_setRequestLocale } from "next-intl/server";
 import Link from "next/link";
 import HomeScene from "./homeComponent/HomeScene";
-import { url } from "inspector";
-import { filterFalsyValues } from "@/helper/filterFalsyValues";
 
 const worksForHome = graphql(/* GraphQL */ `
   query worksForHome($locale: I18NLocaleCode) {

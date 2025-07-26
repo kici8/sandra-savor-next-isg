@@ -1,4 +1,3 @@
-import { CurveModifierRef, Image } from "@react-three/drei";
 import { useFrame, useLoader } from "@react-three/fiber";
 import { useGesture } from "@use-gesture/react";
 import { useMotionValue, useTransform } from "framer-motion";
@@ -11,7 +10,6 @@ type CardProps = {
   cardHeight: number;
   cardHeightWithGap: number;
   totalNumberOfCards: number;
-  pages: number;
   index: number;
   containerRef: React.RefObject<HTMLDivElement>;
 };
@@ -22,7 +20,6 @@ export const Card: React.FC<CardProps> = ({
   cardHeight,
   cardHeightWithGap,
   totalNumberOfCards,
-  pages,
   containerRef,
   index,
 }) => {
@@ -30,7 +27,6 @@ export const Card: React.FC<CardProps> = ({
   const cardMeshRef = useRef<THREE.Mesh>(null);
   const cardShaderMaterialRef = useRef<THREE.ShaderMaterial>(null);
   const isDragging = useRef(false);
-  const curveRef = useRef<CurveModifierRef>(null);
   const positionY = -index * cardHeightWithGap + cardHeightWithGap;
   const xOffset = 0.2;
   const positionX = xOffset * positionY;
@@ -77,7 +73,6 @@ export const Card: React.FC<CardProps> = ({
       onWheel: ({ delta: [, dy] }) => {
         scrollData.current.activeEvent = "wheel";
         scrollData.current.target += dy * wheelMultiplier;
-        curveRef.current?.moveAlongCurve(0.01);
         setLastDirection(dy);
       },
       onDrag: ({ dragging, delta: [, dy] }) => {
