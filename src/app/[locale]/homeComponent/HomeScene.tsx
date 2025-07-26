@@ -13,8 +13,21 @@ const HomeScene: React.FC<HomeSceneProps> = ({ imagesUrl }) => {
 
   return (
     <div className="h-full w-full touch-none" ref={wrapperRef}>
-      <Canvas camera={{ position: [0, 0, 10], fov: 10 }} className="touch-none">
-        <ambientLight />
+      <Canvas
+        camera={{ position: [0, 0, 10], fov: 10 }}
+        className="touch-none"
+        shadows
+      >
+        <ambientLight intensity={0.4} />
+        <directionalLight
+          position={[4, 12, 16]}
+          intensity={1.6}
+          castShadow
+          shadow-mapSize-width={1024}
+          shadow-mapSize-height={1024}
+          shadow-radius={24} // makes shadows softer
+          shadow-bias={-0.001} // helps avoid shadow acne
+        />
         <ScrollContainer imagesUrl={imagesUrl} containerRef={wrapperRef} />
       </Canvas>
     </div>

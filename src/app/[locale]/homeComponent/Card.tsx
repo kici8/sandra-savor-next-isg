@@ -250,14 +250,10 @@ export const Card: React.FC<CardProps> = ({
   return (
     <group ref={cardGroupRef} position={[positionX, positionY, 0]}>
       {/* eslint-disable-next-line jsx-a11y/alt-text */}
-      <Image
-        url={url}
-        position={[0, 0, 0.2]}
-        side={THREE.DoubleSide}
-        ref={cardMeshRef}
-      >
+      <mesh ref={cardMeshRef} position={[0, 0, 0.2]} receiveShadow castShadow>
         <planeGeometry args={[cardWidth, cardHeight, 24, 32]} />
-      </Image>
+        <meshStandardMaterial map={image} side={THREE.DoubleSide} />
+      </mesh>
     </group>
   );
 };

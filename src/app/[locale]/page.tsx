@@ -59,28 +59,18 @@ export default async function Home({
         Sono Sandra, un'artista e illustratrice freelance con casa nelle
         vicinanze di Venezia.
       </p> */}
-
-      {/* {data.works?.data.map((work) => (
-        <Link
-          key={work.id}
-          className="flex flex-col py-3"
-          href={`${locale}/works/${work.attributes?.slug}`}
-        >
-          <picture className="width-100 my-3">
-            <img
-              src={work.attributes?.images.data[0].attributes?.url}
-              alt={
-                work.attributes?.images.data[0].attributes?.alternativeText ??
-                ""
-              }
-            />
-          </picture>
-          <h2 className="text-center text-6xl font-bold">
-            {work.attributes?.title}
-          </h2>
-        </Link>
-      ))} */}
       <HomeScene imagesUrl={imagesUrl} />
+      <div className="absolute left-12 top-1/2 flex -translate-y-1/2 transform flex-col gap-1">
+        {data.works?.data.map((work) => (
+          <Link
+            key={work.id}
+            className="hover:underline"
+            href={`${locale}/works/${work.attributes?.slug}`}
+          >
+            <h2 className="text-sm font-bold">{work.attributes?.title}</h2>
+          </Link>
+        ))}
+      </div>
     </main>
   );
 }
