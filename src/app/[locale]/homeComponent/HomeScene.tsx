@@ -1,5 +1,6 @@
 "use client";
 
+import { Backdrop, SoftShadows } from "@react-three/drei";
 import { Canvas, useThree } from "@react-three/fiber";
 import { Suspense, useRef } from "react";
 import { Card } from "./Card";
@@ -18,15 +19,25 @@ const HomeScene: React.FC<HomeSceneProps> = ({ imagesUrl }) => {
         className="touch-none"
         shadows
       >
+        <SoftShadows size={36} samples={8} />
+        <Backdrop
+          floor={1}
+          segments={40}
+          position={[0, -2.5, 1]}
+          scale={[8, 8, 12]}
+          receiveShadow
+        >
+          <meshStandardMaterial color="rgb(255, 247, 237)" />
+          <shadowMaterial transparent opacity={0.1} />
+        </Backdrop>
         <ambientLight intensity={0.4} />
         <directionalLight
-          position={[4, 12, 16]}
-          intensity={1.6}
+          position={[2, 4, 32]}
+          intensity={2}
           castShadow
           shadow-mapSize-width={1024}
           shadow-mapSize-height={1024}
-          shadow-radius={24} // makes shadows softer
-          shadow-bias={-0.001} // helps avoid shadow acne
+          shadow-bias={-0.001}
         />
         <ScrollContainer imagesUrl={imagesUrl} containerRef={wrapperRef} />
       </Canvas>
@@ -46,7 +57,7 @@ const ScrollContainer: React.FC<ScrollContainerProps> = ({
   const { height } = useThree((state) => state.viewport);
 
   const cardHeightInViewportPercentage = 0.56;
-  const gap = 0.05;
+  const gap = 0.06;
   const cardHeight = height * cardHeightInViewportPercentage - gap;
   const cardWidth = (cardHeight / 4) * 3;
   const cardHeightWithGap = cardHeight + gap;

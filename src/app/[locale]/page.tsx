@@ -43,7 +43,6 @@ export default async function Home({
   const data: WorksForHomeQuery = await fetchData(worksForHome, { locale });
   const t = await getTranslations();
 
-  console.log(data);
   const imagesUrl = filterFalsyValues(
     data.works?.data.map(
       (work) => work.attributes?.images.data[0].attributes?.formats.small.url,

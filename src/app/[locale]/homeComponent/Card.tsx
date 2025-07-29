@@ -28,13 +28,11 @@ export const Card: React.FC<CardProps> = ({
   const cardShaderMaterialRef = useRef<THREE.ShaderMaterial>(null);
   const isDragging = useRef(false);
   const positionY = -index * cardHeightWithGap + cardHeightWithGap;
-  const xOffset = 0.2;
-  const positionX = xOffset * positionY;
 
   const wrapAroundOffset = 1.5;
   const totalHeight = totalNumberOfCards * cardHeightWithGap;
 
-  const wheelFriction = 0.03;
+  const wheelFriction = 0.04;
   const dragFriction = 0.03;
   const wheelMultiplier = 0.01;
   const dragMultiplier = 0.005;
@@ -94,7 +92,7 @@ export const Card: React.FC<CardProps> = ({
 
   useFrame((_state, delta) => {
     // Control the scroll speed
-    // TODO: maybe we need a way for normalize speed/friction for trackpad?
+    // TODO: maybe we need a way for normalize speed/friction for trackPad?
     const { current, target, previous } = scrollData.current;
     const friction =
       scrollData.current.activeEvent === "wheel" ? wheelFriction : dragFriction;
@@ -243,9 +241,9 @@ export const Card: React.FC<CardProps> = ({
   const [image] = useLoader(THREE.TextureLoader, [url]);
 
   return (
-    <group ref={cardGroupRef} position={[positionX, positionY, 0]}>
+    <group ref={cardGroupRef}>
       {/* eslint-disable-next-line jsx-a11y/alt-text */}
-      <mesh ref={cardMeshRef} position={[0, 0, 0.2]} receiveShadow castShadow>
+      <mesh ref={cardMeshRef} position={[0, 0, 0.6]} receiveShadow castShadow>
         <planeGeometry args={[cardWidth, cardHeight, 24, 32]} />
         <meshStandardMaterial map={image} side={THREE.DoubleSide} />
       </mesh>
