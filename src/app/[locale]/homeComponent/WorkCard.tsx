@@ -1,31 +1,36 @@
+"use client";
+
 import { useFrame, useLoader } from "@react-three/fiber";
 import { useGesture } from "@use-gesture/react";
 import { useMotionValue, useTransform } from "framer-motion";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import * as THREE from "three";
+import { SimpleWork } from "./HomeScene";
 
 type CardProps = {
-  url: string;
+  work: SimpleWork;
+  index: number;
   cardWidth: number;
   cardHeight: number;
   cardHeightWithGap: number;
   totalNumberOfCards: number;
-  index: number;
   containerRef: React.RefObject<HTMLDivElement>;
+  setActiveCard: (index: number) => void;
 };
 
-export const Card: React.FC<CardProps> = ({
-  url,
+export const WorkCard: React.FC<CardProps> = ({
+  work,
+  index,
   cardWidth,
   cardHeight,
   cardHeightWithGap,
   totalNumberOfCards,
   containerRef,
-  index,
+  setActiveCard,
 }) => {
   const cardGroupRef = useRef<THREE.Group>(null);
   const cardMeshRef = useRef<THREE.Mesh>(null);
-  const cardShaderMaterialRef = useRef<THREE.ShaderMaterial>(null);
+  const cardMaterialRef = useRef<THREE.MeshStandardMaterial>(null);
   const isDragging = useRef(false);
   const positionY = -index * cardHeightWithGap + cardHeightWithGap;
 
@@ -126,6 +131,7 @@ export const Card: React.FC<CardProps> = ({
         let closest = centerPositions[0];
         let minDist = Math.abs(closest);
         let closestIndex = 0;
+
         centerPositions.forEach((pos, i) => {
           const dist = Math.abs(pos);
           if (dist < minDist) {
@@ -134,8 +140,12 @@ export const Card: React.FC<CardProps> = ({
             closestIndex = i;
           }
         });
+
         // Store the snap target
         snapTarget.current = scrollData.current.current + -closest;
+
+        // Set the active card
+        setActiveCard(closestIndex);
       }
       // Snap towards the stored target
       scrollData.current.target = snapTarget.current;
@@ -228,24 +238,79 @@ export const Card: React.FC<CardProps> = ({
         cardMeshRef.current.geometry.attributes.position.needsUpdate = true;
       }
     }
-
-    // Update shader material
-    if (cardShaderMaterialRef.current) {
-      cardShaderMaterialRef.current.uniforms.uDirection.value =
-        scrollData.current.direction;
-      cardShaderMaterialRef.current.uniforms.uSpeed.value =
-        transformedSpeed.get();
-    }
   });
 
-  const [image] = useLoader(THREE.TextureLoader, [url]);
+  const [image] = useLoader(THREE.TextureLoader, [work.coverUrl]);
+
+  // Start animation
+  useEffect(() => {
+    let frame: number;
+    let start: number | null = null;
+    const duration = 1600; // ms
+
+    const startIndex = 0;
+    const minCardsToAnimate = totalNumberOfCards >= 6 ? 5 : totalNumberOfCards;
+    const maxFinalIndex = Math.min(
+      startIndex + minCardsToAnimate - 1,
+      totalNumberOfCards - 1,
+    );
+
+    const initialTarget = cardHeightWithGap * startIndex;
+    const finalTarget = cardHeightWithGap * maxFinalIndex;
+
+    // Per animazione Z e scala
+    const initialZ = -0.2;
+    const finalZ = 0.6;
+    const initialScale = 0.8;
+    const finalScale = 1;
+
+    scrollData.current.current = initialTarget;
+    scrollData.current.target = initialTarget;
+
+    function animateFakeScroll(ts: number) {
+      if (start === null) start = ts;
+      const elapsed = ts - start;
+      const progress = Math.min(elapsed / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 2);
+
+      // Animate scroll
+      scrollData.current.target =
+        initialTarget + (finalTarget - initialTarget) * eased;
+
+      if (cardMeshRef.current) {
+        // Animate Z
+        cardMeshRef.current.position.z = initialZ + (finalZ - initialZ) * eased;
+        // Animate scale
+        const s = initialScale + (finalScale - initialScale) * eased;
+        cardMeshRef.current.scale.set(s, s, s);
+      }
+
+      if (progress < 1) {
+        frame = requestAnimationFrame(animateFakeScroll);
+      } else {
+        scrollData.current.target = finalTarget;
+        if (cardMeshRef.current) {
+          cardMeshRef.current.position.z = finalZ;
+        }
+        if (cardMeshRef.current) {
+          cardMeshRef.current.scale.set(finalScale, finalScale, finalScale);
+        }
+      }
+    }
+
+    frame = requestAnimationFrame(animateFakeScroll);
+    return () => cancelAnimationFrame(frame);
+  }, [cardHeightWithGap, totalNumberOfCards]);
 
   return (
     <group ref={cardGroupRef}>
-      {/* eslint-disable-next-line jsx-a11y/alt-text */}
       <mesh ref={cardMeshRef} position={[0, 0, 0.6]} receiveShadow castShadow>
         <planeGeometry args={[cardWidth, cardHeight, 24, 32]} />
-        <meshStandardMaterial map={image} side={THREE.DoubleSide} />
+        <meshStandardMaterial
+          map={image}
+          side={THREE.DoubleSide}
+          ref={cardMaterialRef}
+        />
       </mesh>
     </group>
   );
