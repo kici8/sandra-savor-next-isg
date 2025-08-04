@@ -1,9 +1,9 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import { useFrame, useLoader } from "@react-three/fiber";
 import { useGesture } from "@use-gesture/react";
 import { useMotionValue, useTransform } from "framer-motion";
-import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { SimpleWork } from "./HomeScene";
 
@@ -16,6 +16,7 @@ type CardProps = {
   totalNumberOfCards: number;
   containerRef: React.RefObject<HTMLDivElement>;
   setActiveCard: (index: number) => void;
+  isNavigating: boolean;
 };
 
 export const WorkCard: React.FC<CardProps> = ({
@@ -27,42 +28,42 @@ export const WorkCard: React.FC<CardProps> = ({
   totalNumberOfCards,
   containerRef,
   setActiveCard,
+  isNavigating,
 }) => {
+  // === REFS & CONSTANTS ===
   const cardGroupRef = useRef<THREE.Group>(null);
   const cardMeshRef = useRef<THREE.Mesh>(null);
   const cardMaterialRef = useRef<THREE.MeshStandardMaterial>(null);
+
   const isDragging = useRef(false);
   const positionY = -index * cardHeightWithGap + cardHeightWithGap;
-
   const wrapAroundOffset = 1.5;
   const totalHeight = totalNumberOfCards * cardHeightWithGap;
 
+  // Scroll & snap logic
+  const scrollData = useRef({
+    current: 0,
+    target: 0,
+    previous: 0,
+    activeEvent: "wheel" as "wheel" | "drag",
+    direction: 1 as 1 | -1,
+  });
+  const snapTarget = useRef<number | null>(null);
+
+  // Card bending
+  const originalPositions = useRef<Float32Array | null>(null);
+  const isOriginalPositionCreated = useRef(false);
+  const smoothedCurvature = useRef(0);
+
+  // Motion values
+  const speed = useMotionValue(0);
+  const transformedSpeed = useTransform(speed, [0, 10], [0, 1]);
+
+  // === GESTURE HANDLERS ===
   const wheelFriction = 0.04;
   const dragFriction = 0.03;
   const wheelMultiplier = 0.01;
   const dragMultiplier = 0.005;
-
-  const scrollData = useRef<{
-    current: number;
-    target: number;
-    previous: number;
-    activeEvent: "wheel" | "drag";
-    direction: 1 | -1;
-  }>({
-    current: 0,
-    target: 0,
-    previous: 0,
-    activeEvent: "wheel",
-    direction: 1,
-  });
-
-  // GESTURE AND SNAP
-  const snapTarget = useRef<number | null>(null);
-  const originalPositions = useRef<Float32Array | null>(null);
-  const isOriginalPositionCreated = useRef(false);
-  const smoothedCurvature = useRef(0);
-  const speed = useMotionValue(0);
-  const transformedSpeed = useTransform(speed, [0, 10], [0, 1]);
 
   const setLastDirection = (number: number) => {
     if (number === 0) return;
@@ -89,33 +90,93 @@ export const WorkCard: React.FC<CardProps> = ({
     },
     {
       target: containerRef,
-      eventOptions: {
-        passive: false,
-      },
+      eventOptions: { passive: false },
     },
   );
 
+  // === FALL ANIMATION (CADUTA) ===
+  const fallStartRef = useRef<number | null>(null);
+  const fallDuration = 1200; // ms
+  const fallDistance = useRef(-6 - Math.random() * 2);
+
+  useEffect(() => {
+    if (isNavigating) {
+      fallStartRef.current = performance.now();
+    }
+  }, [isNavigating]);
+
+  // === INITIAL ENTRANCE ANIMATION ===
+  useEffect(() => {
+    let frame: number;
+    let start: number | null = null;
+    const duration = 1600; // ms
+
+    // Calcola range animazione iniziale
+    const startIndex = 0;
+    const minCardsToAnimate = totalNumberOfCards >= 6 ? 5 : totalNumberOfCards;
+    const maxFinalIndex = Math.min(
+      startIndex + minCardsToAnimate - 1,
+      totalNumberOfCards - 1,
+    );
+    const initialTarget = cardHeightWithGap * startIndex;
+    const finalTarget = cardHeightWithGap * maxFinalIndex;
+
+    // Z e scala
+    const initialZ = -0.2;
+    const finalZ = 0.6;
+    const initialScale = 0.8;
+    const finalScale = 1;
+
+    scrollData.current.current = initialTarget;
+    scrollData.current.target = initialTarget;
+
+    function animateFakeScroll(ts: number) {
+      if (start === null) start = ts;
+      const elapsed = ts - start;
+      const progress = Math.min(elapsed / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 2);
+
+      scrollData.current.target =
+        initialTarget + (finalTarget - initialTarget) * eased;
+
+      if (cardMeshRef.current) {
+        cardMeshRef.current.position.z = initialZ + (finalZ - initialZ) * eased;
+        const s = initialScale + (finalScale - initialScale) * eased;
+        cardMeshRef.current.scale.set(s, s, s);
+      }
+
+      if (progress < 1) {
+        frame = requestAnimationFrame(animateFakeScroll);
+      } else {
+        scrollData.current.target = finalTarget;
+        if (cardMeshRef.current) {
+          cardMeshRef.current.position.z = finalZ;
+          cardMeshRef.current.scale.set(finalScale, finalScale, finalScale);
+        }
+      }
+    }
+
+    frame = requestAnimationFrame(animateFakeScroll);
+    return () => cancelAnimationFrame(frame);
+  }, [cardHeightWithGap, totalNumberOfCards]);
+
+  // === THREE.JS FRAME LOOP ===
   useFrame((_state, delta) => {
-    // Control the scroll speed
-    // TODO: maybe we need a way for normalize speed/friction for trackPad?
+    // --- Scroll physics ---
     const { current, target, previous } = scrollData.current;
     const friction =
       scrollData.current.activeEvent === "wheel" ? wheelFriction : dragFriction;
     scrollData.current.current += (target - current) * friction;
 
     const difference = Math.abs(current - previous);
-    if (difference > 0.0001) {
-      speed.set(difference / delta);
-    } else {
-      speed.set(0);
-    }
+    speed.set(difference > 0.0001 ? difference / delta : 0);
     scrollData.current.previous = current;
 
-    // SNAP LOGIC
+    // --- Snap logic ---
     const snapThreshold = 0.05;
     if (speed.get() < snapThreshold && !isDragging.current) {
       if (snapTarget.current === null) {
-        // Compute the closest card only once
+        // Trova la card più vicina al centro
         const centerPositions = Array.from(
           { length: totalNumberOfCards },
           (_, i) => {
@@ -131,7 +192,6 @@ export const WorkCard: React.FC<CardProps> = ({
         let closest = centerPositions[0];
         let minDist = Math.abs(closest);
         let closestIndex = 0;
-
         centerPositions.forEach((pos, i) => {
           const dist = Math.abs(pos);
           if (dist < minDist) {
@@ -140,47 +200,50 @@ export const WorkCard: React.FC<CardProps> = ({
             closestIndex = i;
           }
         });
-
-        // Store the snap target
         snapTarget.current = scrollData.current.current + -closest;
-
-        // Set the active card
         setActiveCard(closestIndex);
       }
-      // Snap towards the stored target
       scrollData.current.target = snapTarget.current;
     } else {
-      // If user interacts or speed increases, reset snapTarget
       snapTarget.current = null;
     }
 
-    // ROTATION
+    // --- Card position & fall ---
     const rotationY =
-      ((((positionY + current + wrapAroundOffset) % totalHeight) +
+      ((((positionY + scrollData.current.current + wrapAroundOffset) %
+        totalHeight) +
         totalHeight) %
         totalHeight) -
       wrapAroundOffset;
 
-    // UPDATE CARD GROUP
-    if (cardGroupRef.current) {
+    if (cardGroupRef.current && cardGroupRef.current.position) {
       const x = 0.12 * rotationY;
-      cardGroupRef.current.position.y = rotationY;
       cardGroupRef.current.position.x = x;
-      // Rotation
+
+      // Caduta
+      if (isNavigating && fallStartRef.current !== null) {
+        const now = performance.now();
+        const elapsed = now - fallStartRef.current;
+        const progress = Math.min(elapsed / fallDuration, 1);
+        const eased = 1 - Math.pow(1 - progress, 2);
+        cardGroupRef.current.position.y =
+          rotationY + fallDistance.current * eased;
+      } else if (isNavigating) {
+        cardGroupRef.current.position.y = rotationY + fallDistance.current;
+      } else {
+        cardGroupRef.current.position.y = rotationY;
+      }
+
       cardGroupRef.current.rotation.y = rotationY;
     }
 
-    // UPDATE MESH
-
-    // get the curvature from the speed
+    // --- Card mesh bending ---
     const smoothCurvatureTarget = transformedSpeed.get();
     smoothedCurvature.current +=
       (smoothCurvatureTarget - smoothedCurvature.current) * 0.02;
 
     if (cardMeshRef.current) {
       if (!isOriginalPositionCreated.current) {
-        // Create original positions only once (copy without the reference)
-        // I think I'm updating the cardMeshRef position in a wrong way, but updating the original positions works
         originalPositions.current = Float32Array.from(
           cardMeshRef.current.geometry.attributes.position.array,
         );
@@ -206,7 +269,6 @@ export const WorkCard: React.FC<CardProps> = ({
           // Bend the card
           const x = originalPositions.current[i];
           const y = originalPositions.current[i + 1];
-          // const z = originalPositions.current[i + 2];
           const angle = Math.PI / 4;
           const xr = x * Math.cos(angle) - y * Math.sin(angle);
           const yr = x * Math.sin(angle) + y * Math.cos(angle);
@@ -234,74 +296,15 @@ export const WorkCard: React.FC<CardProps> = ({
           meshPositionArray[i + 1] = newY;
           meshPositionArray[i + 2] = windedZ;
         }
-        // Call the update
         cardMeshRef.current.geometry.attributes.position.needsUpdate = true;
       }
     }
   });
 
+  // === TEXTURE ===
   const [image] = useLoader(THREE.TextureLoader, [work.coverUrl]);
 
-  // Start animation
-  useEffect(() => {
-    let frame: number;
-    let start: number | null = null;
-    const duration = 1600; // ms
-
-    const startIndex = 0;
-    const minCardsToAnimate = totalNumberOfCards >= 6 ? 5 : totalNumberOfCards;
-    const maxFinalIndex = Math.min(
-      startIndex + minCardsToAnimate - 1,
-      totalNumberOfCards - 1,
-    );
-
-    const initialTarget = cardHeightWithGap * startIndex;
-    const finalTarget = cardHeightWithGap * maxFinalIndex;
-
-    // Per animazione Z e scala
-    const initialZ = -0.2;
-    const finalZ = 0.6;
-    const initialScale = 0.8;
-    const finalScale = 1;
-
-    scrollData.current.current = initialTarget;
-    scrollData.current.target = initialTarget;
-
-    function animateFakeScroll(ts: number) {
-      if (start === null) start = ts;
-      const elapsed = ts - start;
-      const progress = Math.min(elapsed / duration, 1);
-      const eased = 1 - Math.pow(1 - progress, 2);
-
-      // Animate scroll
-      scrollData.current.target =
-        initialTarget + (finalTarget - initialTarget) * eased;
-
-      if (cardMeshRef.current) {
-        // Animate Z
-        cardMeshRef.current.position.z = initialZ + (finalZ - initialZ) * eased;
-        // Animate scale
-        const s = initialScale + (finalScale - initialScale) * eased;
-        cardMeshRef.current.scale.set(s, s, s);
-      }
-
-      if (progress < 1) {
-        frame = requestAnimationFrame(animateFakeScroll);
-      } else {
-        scrollData.current.target = finalTarget;
-        if (cardMeshRef.current) {
-          cardMeshRef.current.position.z = finalZ;
-        }
-        if (cardMeshRef.current) {
-          cardMeshRef.current.scale.set(finalScale, finalScale, finalScale);
-        }
-      }
-    }
-
-    frame = requestAnimationFrame(animateFakeScroll);
-    return () => cancelAnimationFrame(frame);
-  }, [cardHeightWithGap, totalNumberOfCards]);
-
+  // === RENDER ===
   return (
     <group ref={cardGroupRef}>
       <mesh ref={cardMeshRef} position={[0, 0, 0.6]} receiveShadow castShadow>

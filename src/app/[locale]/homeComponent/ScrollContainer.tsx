@@ -7,12 +7,14 @@ type ScrollContainerProps = {
   works: SimpleWork[];
   containerRef: React.RefObject<HTMLDivElement>;
   setActiveCard: (index: number) => void;
+  isNavigating: boolean;
 };
 
 export const ScrollContainer: React.FC<ScrollContainerProps> = ({
   works,
   containerRef,
   setActiveCard,
+  isNavigating,
 }) => {
   const { height } = useThree((state) => state.viewport);
 
@@ -36,6 +38,7 @@ export const ScrollContainer: React.FC<ScrollContainerProps> = ({
             index={index}
             containerRef={containerRef}
             setActiveCard={setActiveCard}
+            isNavigating={isNavigating}
           />
         );
       })}

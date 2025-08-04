@@ -3,7 +3,6 @@
 import { WorksForHomeQuery } from "@/graphql/generated/graphql";
 import { Backdrop, SoftShadows } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
-import Link from "next/link";
 import { useRef, useState } from "react";
 import { ScrollContainer } from "./ScrollContainer";
 
@@ -21,6 +20,7 @@ const HomeScene: React.FC<HomeSceneProps> = ({ works }) => {
   const wrapperRef = useRef<HTMLDivElement>(null);
 
   const [activeCard, setActiveCard] = useState<SimpleWork | null>(null);
+  const [isNavigating, setIsNavigating] = useState(false);
 
   const filteredWorks: SimpleWork[] = [];
 
@@ -42,6 +42,7 @@ const HomeScene: React.FC<HomeSceneProps> = ({ works }) => {
   };
 
   const handleNavigate = (slug: string) => {
+    setIsNavigating(true);
     setTimeout(() => {
       // TODO: locale
       window.location.href = `it/works/${slug}`;
@@ -80,6 +81,7 @@ const HomeScene: React.FC<HomeSceneProps> = ({ works }) => {
             works={filteredWorks}
             containerRef={wrapperRef}
             setActiveCard={handleActiveCard}
+            isNavigating={isNavigating}
           />
         </Canvas>
       </div>
