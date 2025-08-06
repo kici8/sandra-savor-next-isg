@@ -9,6 +9,9 @@
     "lint": "next lint",
     "codegen": "graphql-codegen --require dotenv/config --config codegen.ts --watch"
   },
+  "engines": {
+    "node": ">=21.1.0"
+  },
   "dependencies": {
     "@graphql-typed-document-node/core": "^3.2.0",
     "@react-three/drei": "^10.6.1",
