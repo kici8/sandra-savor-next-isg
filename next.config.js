@@ -1,9 +1,14 @@
 /** @type {import('next').NextConfig} */
-const withNextIntl = require("next-intl/plugin")();
 
-module.exports = withNextIntl({
+module.exports = {
   images: {
-    domains: ["res.cloudinary.com"],
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "res.cloudinary.com",
+        pathname: "**",
+      },
+    ],
   },
   // Other Next.js configuration ...
   // Webpack configuration for handling GLSL files
@@ -16,4 +21,4 @@ module.exports = withNextIntl({
 
     return config;
   },
-});
+};

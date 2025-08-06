@@ -5,7 +5,7 @@ import { WorkCard } from "./WorkCard";
 
 type ScrollContainerProps = {
   works: SimpleWork[];
-  containerRef: React.RefObject<HTMLDivElement>;
+  containerRef: React.RefObject<HTMLDivElement | null>;
   setActiveCard: (index: number) => void;
 };
 

@@ -6,13 +6,16 @@ import {
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { worksForWork, worksForWorkStaticParams } from "./queries";
+import { setStaticParamsLocale } from "next-international/server";
 
 // Generate static paths based on works slug
 export async function generateStaticParams({
-  params: { locale },
+  params,
 }: {
-  params: { locale: string };
+  params: Promise<{ locale: string }>;
 }) {
+  const { locale } = await params;
+
   const data: WorksForWorkStaticParamsQuery = await fetchData(
     worksForWorkStaticParams,
     { locale },
@@ -27,12 +30,15 @@ export async function generateStaticParams({
 export default async function Page({
   params,
 }: {
-  params: { slug: string; locale: string };
+  params: Promise<{ slug: string; locale: string }>;
 }) {
   // Data fetching
+  const { slug, locale } = await params;
+  setStaticParamsLocale(locale);
+
   const data: WorksForWorkQuery = await fetchData(worksForWork, {
-    slug: params.slug,
-    locale: params.locale,
+    slug: slug,
+    locale: locale,
   });
 
   const work = data.works?.data[0];

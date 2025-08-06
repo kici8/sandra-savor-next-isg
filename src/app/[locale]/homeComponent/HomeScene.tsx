@@ -3,7 +3,6 @@
 import { WorksForHomeQuery } from "@/graphql/generated/graphql";
 import { Backdrop, SoftShadows } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
-import Link from "next/link";
 import { useRef, useState } from "react";
 import { ScrollContainer } from "./ScrollContainer";
 

@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "../globals.css";
-import { locales } from "@/i18n";
-import { unstable_setRequestLocale } from "next-intl/server";
 import Link from "next/link";
 import Logo from "@/components/Logo";
+import { I18nProviderClient } from "../../../locales/client";
+import { getStaticParams } from "../../../locales/server";
 
 // TODO: add license for the fonts
 // Font display
@@ -60,62 +60,64 @@ export const metadata: Metadata = {
 
 // Generate static paths based on locale params
 export function generateStaticParams() {
-  return locales.map((locale) => ({ locale }));
+  return getStaticParams();
 }
 
 export default async function RootLayout({
   children,
-  params: { locale },
+  params,
 }: {
   children: React.ReactNode;
-  params: {
+  params: Promise<{
     locale: string;
-  };
+  }>;
 }) {
-  unstable_setRequestLocale(locale);
+  const { locale } = await params;
 
   return (
     <html lang="en">
       <body
         className={`${aujournuit.variable} ${ronzino.variable} flex min-h-svh flex-col bg-orange-50 font-ronzino text-blue-900 dark:bg-black dark:text-orange-50`}
       >
-        <header className="max-w-container2560 relative z-30 mx-auto flex h-24 w-full shrink-0 items-center px-4">
-          <nav className="flex flex-1 font-medium ">
-            <ul className="relative flex flex-grow items-center gap-4">
-              <li className="mr-auto flex items-center gap-4">
-                <Link
-                  href={`/${locale}`}
-                  className="flex items-center gap-3"
-                  aria-label="Sandra savorgnani home"
-                >
-                  <span className="">Sandra Savorgnani</span>
-                </Link>
-              </li>
-              <li>
-                <Link href={`/${locale}/works`}>Works</Link>
-              </li>
-              <li>
-                <Link href={`/${locale}/about`}>Info</Link>
-              </li>
-            </ul>
-          </nav>
-        </header>
-        <div className="flex-1 shrink-0">{children}</div>
-        <footer className="max-w-container2560 relative mx-auto flex h-24 w-full shrink-0 items-center px-4">
-          <Logo />
-          <div className="ml-auto flex items-center gap-2 text-sm">
-            <Link href={`/${locale}/`}>Note legali</Link>|
-            <Link href={`/${locale}/privacy`}>Privacy</Link>|
-            <Link href={`/${locale}/privacy`}>Credit</Link>
-          </div>
-          {/* <div className="flex gap-3">
+        <I18nProviderClient locale={locale}>
+          <header className="max-w-container2560 relative z-30 mx-auto flex h-24 w-full shrink-0 items-center px-4">
+            <nav className="flex flex-1 font-medium ">
+              <ul className="relative flex flex-grow items-center gap-4">
+                <li className="mr-auto flex items-center gap-4">
+                  <Link
+                    href={`/${locale}`}
+                    className="flex items-center gap-3"
+                    aria-label="Sandra savorgnani home"
+                  >
+                    <span className="">Sandra Savorgnani</span>
+                  </Link>
+                </li>
+                <li>
+                  <Link href={`/${locale}/works`}>Works</Link>
+                </li>
+                <li>
+                  <Link href={`/${locale}/about`}>Info</Link>
+                </li>
+              </ul>
+            </nav>
+          </header>
+          <div className="flex-1 shrink-0">{children}</div>
+          <footer className="max-w-container2560 relative mx-auto flex h-24 w-full shrink-0 items-center px-4">
+            <Logo />
+            <div className="ml-auto flex items-center gap-2 text-sm">
+              <Link href={`/${locale}/`}>Note legali</Link>|
+              <Link href={`/${locale}/privacy`}>Privacy</Link>|
+              <Link href={`/${locale}/privacy`}>Credit</Link>
+            </div>
+            {/* <div className="flex gap-3">
             {locales.map((language) => (
               <Link key={language} href={`/${language}`}>
                 {language === locale ? <strong>{language}</strong> : language}
               </Link>
             ))}
           </div> */}
-        </footer>
+          </footer>
+        </I18nProviderClient>
       </body>
     </html>
   );

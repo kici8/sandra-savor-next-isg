@@ -14,7 +14,7 @@ type CardProps = {
   cardHeight: number;
   cardHeightWithGap: number;
   totalNumberOfCards: number;
-  containerRef: React.RefObject<HTMLDivElement>;
+  containerRef: React.RefObject<HTMLDivElement | null>;
   setActiveCard: (index: number) => void;
 };
 
