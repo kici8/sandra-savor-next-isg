@@ -1,12 +1,57 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import localFont from "next/font/local";
 import "../globals.css";
 import { locales } from "@/i18n";
 import { unstable_setRequestLocale } from "next-intl/server";
 import Link from "next/link";
 import Logo from "@/components/Logo";
 
-const inter = Inter({ subsets: ["latin"] });
+// TODO: add license for the fonts
+// Font display
+const aujournuit = localFont({
+  src: "../../../public/fonts/Aujournuit-Condensed.woff2",
+  variable: "--font-aujournuit",
+  display: "swap",
+});
+
+// TODO: add license for the fonts
+// Font main
+const ronzino = localFont({
+  src: [
+    {
+      path: "../../../public/fonts/Ronzino-Regular.woff2",
+      weight: "400",
+      style: "normal",
+    },
+    {
+      path: "../../../public/fonts/Ronzino-Oblique.woff2",
+      weight: "400",
+      style: "italic",
+    },
+    {
+      path: "../../../public/fonts/Ronzino-Medium.woff2",
+      weight: "500",
+      style: "normal",
+    },
+    {
+      path: "../../../public/fonts/Ronzino-MediumOblique.woff2",
+      weight: "500",
+      style: "italic",
+    },
+    {
+      path: "../../../public/fonts/Ronzino-Bold.woff2",
+      weight: "700",
+      style: "normal",
+    },
+    {
+      path: "../../../public/fonts/Ronzino-BoldOblique.woff2",
+      weight: "700",
+      style: "italic",
+    },
+  ],
+  variable: "--font-ronzino",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -32,30 +77,10 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${inter.className} bg-orange-50 text-gray-900 dark:bg-black dark:text-orange-50`}
+        className={`${aujournuit.variable} ${ronzino.variable} font-ronzino bg-orange-50 text-blue-900 dark:bg-black dark:text-orange-50`}
       >
-        {/* <header className="flex h-20 items-center px-6">
-          <nav className="flex flex-1">
-            <ul className="relative flex flex-grow items-center justify-between">
-              <li>
-                <Link className="" href={`/${locale}`}>
-                  SANDRA SAVORGNANI
-                </Link>
-              </li>
-              <li className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-                <Link href={`/${locale}`}>
-                  <Logo />
-                </Link>
-              </li>
-              <li>
-                <Link href={`/${locale}/about`}>ABOUT</Link>
-              </li>
-            </ul>
-          </nav>
-        </header> */}
-
-        <header className="absolute left-0 top-0 z-30 flex h-20 w-full items-center px-6">
-          <nav className="flex flex-1">
+        <header className="relative z-30 flex h-24 w-full items-center px-4">
+          <nav className="flex flex-1 font-medium ">
             <ul className="relative flex flex-grow items-center gap-4">
               <li className="mr-auto flex items-center gap-4">
                 <Link
@@ -63,31 +88,33 @@ export default async function RootLayout({
                   className="flex items-center gap-3"
                   aria-label="Sandra savorgnani home"
                 >
-                  <Logo />
-                  <span className="hidden text-lg md:block">
-                    Sandra Savorgnani
-                  </span>
+                  <span className="">Sandra Savorgnani</span>
                 </Link>
               </li>
-              {/* <li>
-                <Link href={`/${locale}/works`}>WORKS</Link>
-              </li> */}
               <li>
-                <Link href={`/${locale}/about`}>ABOUT</Link>
+                <Link href={`/${locale}/works`}>Works</Link>
+              </li>
+              <li>
+                <Link href={`/${locale}/about`}>Info</Link>
               </li>
             </ul>
           </nav>
         </header>
-
-        {children}
-        <footer className="absolute bottom-0 left-0 h-12 w-full items-center px-6">
-          <div className="flex gap-3">
+        <div className="min-h-[calc(100vh-12rem)] w-full">{children}</div>
+        <footer className="relative flex h-24 w-full items-center px-4">
+          <Logo />
+          <div className="ml-auto flex items-center gap-2 text-sm">
+            <Link href={`/${locale}/`}>Note legali</Link>|
+            <Link href={`/${locale}/privacy`}>Privacy</Link>|
+            <Link href={`/${locale}/privacy`}>Credit</Link>
+          </div>
+          {/* <div className="flex gap-3">
             {locales.map((language) => (
               <Link key={language} href={`/${language}`}>
                 {language === locale ? <strong>{language}</strong> : language}
               </Link>
             ))}
-          </div>
+          </div> */}
         </footer>
       </body>
     </html>

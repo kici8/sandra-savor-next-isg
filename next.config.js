@@ -2,6 +2,9 @@
 const withNextIntl = require("next-intl/plugin")();
 
 module.exports = withNextIntl({
+  images: {
+    domains: ["res.cloudinary.com"],
+  },
   // Other Next.js configuration ...
   // Webpack configuration for handling GLSL files
   webpack: (config, options) => {
