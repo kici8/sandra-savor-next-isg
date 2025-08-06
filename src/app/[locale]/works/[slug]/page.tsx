@@ -41,12 +41,12 @@ export default async function Page({
     locale: locale,
   });
 
-  const work = data.works?.data[0];
-
   // 404 if no work found
-  if (!work) {
+  if (!data || !data.works || data.works.data.length === 0) {
     notFound();
   }
+
+  const work = data.works?.data[0];
 
   const year = work.attributes?.dateOfCreation
     ? new Date(work.attributes.dateOfCreation).getFullYear()
@@ -56,7 +56,7 @@ export default async function Page({
   // fast col generation https://www.tailwindgen.com/
 
   return (
-    <div className="max-w-container2560 mx-auto grid grid-cols-4 gap-4 px-4 lg:grid-cols-12 lg:grid-rows-[auto,1fr]">
+    <div className="mx-auto grid max-w-container2560 grid-cols-4 gap-4 px-4 lg:grid-cols-12 lg:grid-rows-[auto,1fr]">
       {/* 
         // TODO: rewrite the layout to use sticky positioning for title and info
         // TITLE AND DESCRIPTION
