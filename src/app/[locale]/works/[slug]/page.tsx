@@ -7,23 +7,23 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import { worksForWork, worksForWorkStaticParams } from "./queries";
 import { setStaticParamsLocale } from "next-international/server";
+import { getStaticParams } from "../../../../../locales/server";
 
-// Generate static paths based on works slug
-export async function generateStaticParams({
-  params,
-}: {
-  params: Promise<{ locale: string }>;
-}) {
-  const { locale } = await params;
+// Genera tutti i parametri statici per ogni locale e ogni work
+export async function generateStaticParams() {
+  const locales = getStaticParams();
+  const allParams: { locale: string; slug: string }[] = [];
 
-  const data: WorksForWorkStaticParamsQuery = await fetchData(
-    worksForWorkStaticParams,
-    { locale },
-  );
-  const staticParams = data.works?.data.map((work: any) => ({
-    slug: work.attributes.slug,
-  }));
-  return staticParams ?? [];
+  for (const { locale } of locales) {
+    const data = await fetchData(worksForWorkStaticParams, { locale });
+    if (data?.works?.data) {
+      data.works.data.forEach((work: any) => {
+        allParams.push({ locale, slug: work.attributes.slug });
+      });
+    }
+  }
+
+  return allParams;
 }
 
 // Page component
@@ -42,7 +42,7 @@ export default async function Page({
   });
 
   // 404 if no work found
-  if (!data || !data.works || data.works.data.length === 0) {
+  if (!data || !data.works || data.works?.data.length === 0) {
     notFound();
   }
 
