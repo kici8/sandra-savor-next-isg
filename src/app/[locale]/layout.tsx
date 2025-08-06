@@ -77,9 +77,9 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${aujournuit.variable} ${ronzino.variable} font-ronzino bg-orange-50 text-blue-900 dark:bg-black dark:text-orange-50`}
+        className={`${aujournuit.variable} ${ronzino.variable} flex min-h-svh flex-col bg-orange-50 font-ronzino text-blue-900 dark:bg-black dark:text-orange-50`}
       >
-        <header className="relative z-30 flex h-24 w-full items-center px-4">
+        <header className="max-w-container2560 relative z-30 mx-auto flex h-24 w-full shrink-0 items-center px-4">
           <nav className="flex flex-1 font-medium ">
             <ul className="relative flex flex-grow items-center gap-4">
               <li className="mr-auto flex items-center gap-4">
@@ -100,8 +100,8 @@ export default async function RootLayout({
             </ul>
           </nav>
         </header>
-        <div className="min-h-[calc(100vh-12rem)] w-full">{children}</div>
-        <footer className="relative flex h-24 w-full items-center px-4">
+        <div className="flex-1 shrink-0">{children}</div>
+        <footer className="max-w-container2560 relative mx-auto flex h-24 w-full shrink-0 items-center px-4">
           <Logo />
           <div className="ml-auto flex items-center gap-2 text-sm">
             <Link href={`/${locale}/`}>Note legali</Link>|

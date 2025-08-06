@@ -12,6 +12,9 @@ const config: Config = {
         aujournuit: ["var(--font-aujournuit)", "serif"],
         ronzino: ["var(--font-ronzino)", "sans-serif"],
       },
+      maxWidth: {
+        container2560: "2560px",
+      },
       backgroundImage: {
         "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
         "gradient-conic":
