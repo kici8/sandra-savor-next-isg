@@ -1187,6 +1187,13 @@ export type WorksForWorkQueryVariables = Exact<{
 
 export type WorksForWorkQuery = { __typename?: 'Query', works?: { __typename?: 'WorkEntityResponseCollection', data: Array<{ __typename?: 'WorkEntity', id?: string | null, attributes?: { __typename?: 'Work', slug?: string | null, title?: string | null, description: string, dateOfCreation?: any | null, widthInCm?: number | null, heightInCm?: number | null, categories?: { __typename?: 'CategoryRelationResponseCollection', data: Array<{ __typename?: 'CategoryEntity', id?: string | null, attributes?: { __typename?: 'Category', title: string, slug?: string | null } | null }> } | null, images: { __typename?: 'UploadFileRelationResponseCollection', data: Array<{ __typename?: 'UploadFileEntity', id?: string | null, attributes?: { __typename?: 'UploadFile', url: string, alternativeText?: string | null } | null }> } } | null }> } | null };
 
+export type WorksForWorksQueryVariables = Exact<{
+  locale?: InputMaybe<Scalars['I18NLocaleCode']['input']>;
+}>;
+
+
+export type WorksForWorksQuery = { __typename?: 'Query', works?: { __typename?: 'WorkEntityResponseCollection', data: Array<{ __typename?: 'WorkEntity', id?: string | null, attributes?: { __typename?: 'Work', slug?: string | null, title?: string | null, description: string, images: { __typename?: 'UploadFileRelationResponseCollection', data: Array<{ __typename?: 'UploadFileEntity', id?: string | null, attributes?: { __typename?: 'UploadFile', url: string, previewUrl?: string | null, alternativeText?: string | null, formats?: any | null } | null }> } } | null }> } | null };
+
 export class TypedDocumentString<TResult, TVariables>
   extends String
   implements DocumentTypeDecoration<TResult, TVariables>
@@ -1274,3 +1281,28 @@ export const WorksForWorkDocument = new TypedDocumentString(`
   }
 }
     `) as unknown as TypedDocumentString<WorksForWorkQuery, WorksForWorkQueryVariables>;
+export const WorksForWorksDocument = new TypedDocumentString(`
+    query worksForWorks($locale: I18NLocaleCode) {
+  works(locale: $locale) {
+    data {
+      id
+      attributes {
+        slug
+        title
+        description
+        images {
+          data {
+            id
+            attributes {
+              url
+              previewUrl
+              alternativeText
+              formats
+            }
+          }
+        }
+      }
+    }
+  }
+}
+    `) as unknown as TypedDocumentString<WorksForWorksQuery, WorksForWorksQueryVariables>;
