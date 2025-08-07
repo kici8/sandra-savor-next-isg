@@ -5,6 +5,7 @@ import { Backdrop, SoftShadows } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
 import { useRef, useState } from "react";
 import { ScrollContainer } from "./ScrollContainer";
+import { useCurrentLocale } from "../../../../locales/client";
 
 type HomeSceneProps = {
   works: WorksForHomeQuery["works"];
@@ -17,6 +18,7 @@ export type SimpleWork = {
 };
 
 const HomeScene: React.FC<HomeSceneProps> = ({ works }) => {
+  const locale = useCurrentLocale();
   const wrapperRef = useRef<HTMLDivElement>(null);
 
   const [activeCard, setActiveCard] = useState<SimpleWork | null>(null);
@@ -43,7 +45,7 @@ const HomeScene: React.FC<HomeSceneProps> = ({ works }) => {
   const handleNavigate = (slug: string) => {
     setTimeout(() => {
       // TODO: locale
-      window.location.href = `it/works/${slug}`;
+      window.location.href = `${locale}/works/${slug}`;
     }, 1200);
   };
 

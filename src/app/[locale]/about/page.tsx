@@ -10,10 +10,11 @@ export default async function Page({
   const { locale } = await params;
   setStaticParamsLocale(locale);
 
+  // TODO: move these texts to the strapi backOffice
   const t = await getI18n();
 
   return (
-    <div className="flex h-dvh w-full items-center justify-center">
+    <div className="">
       <div className="flex max-w-96 flex-col items-center gap-2">
         <h1 className="text-center text-xl font-bold">{t("about.title")}</h1>
         <p className="text-center text-sm">{t("about.description")}</p>

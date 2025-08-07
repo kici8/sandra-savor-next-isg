@@ -1,10 +1,10 @@
+import Logo from "@/components/Logo";
 import type { Metadata } from "next";
 import localFont from "next/font/local";
-import "../globals.css";
 import Link from "next/link";
-import Logo from "@/components/Logo";
 import { I18nProviderClient } from "../../../locales/client";
-import { getStaticParams } from "../../../locales/server";
+import { getScopedI18n, getStaticParams } from "../../../locales/server";
+import "../globals.css";
 
 // TODO: add license for the fonts
 // Font display
@@ -73,6 +73,7 @@ export default async function RootLayout({
   }>;
 }) {
   const { locale } = await params;
+  const t = await getScopedI18n("layout");
 
   return (
     <html lang="en">
@@ -80,7 +81,7 @@ export default async function RootLayout({
         className={`${aujournuit.variable} ${ronzino.variable} flex min-h-svh flex-col bg-orange-50 font-ronzino text-blue-900 dark:bg-black dark:text-orange-50`}
       >
         <I18nProviderClient locale={locale}>
-          <header className="max-w-container2560 relative z-30 mx-auto flex h-24 w-full shrink-0 items-center px-4">
+          <header className="relative z-30 mx-auto flex h-24 w-full max-w-container2560 shrink-0 items-center px-4">
             <nav className="flex flex-1 font-medium ">
               <ul className="relative flex flex-grow items-center gap-4">
                 <li className="mr-auto flex items-center gap-4">
@@ -93,21 +94,22 @@ export default async function RootLayout({
                   </Link>
                 </li>
                 <li>
-                  <Link href={`/${locale}/works`}>Works</Link>
+                  <Link href={`/${locale}/works`}>{t("header.works")}</Link>
                 </li>
                 <li>
-                  <Link href={`/${locale}/about`}>Info</Link>
+                  <Link href={`/${locale}/about`}>{t("header.info")}</Link>
                 </li>
               </ul>
             </nav>
           </header>
           <div className="flex-1 shrink-0">{children}</div>
-          <footer className="max-w-container2560 relative mx-auto flex h-24 w-full shrink-0 items-center px-4">
+          <footer className="relative mx-auto flex h-24 w-full max-w-container2560 shrink-0 items-center px-4">
             <Logo />
+            {/* FIXME: create these pages */}
             <div className="ml-auto flex items-center gap-2 text-sm">
-              <Link href={`/${locale}/`}>Note legali</Link>|
-              <Link href={`/${locale}/privacy`}>Privacy</Link>|
-              <Link href={`/${locale}/privacy`}>Credit</Link>
+              <Link href={`/${locale}/legal`}>{t("footer.legal")}</Link>|
+              <Link href={`/${locale}/privacy`}>{t("footer.privacy")}</Link>|
+              <Link href={`/${locale}/credit`}>{t("footer.credit")}</Link>
             </div>
             {/* <div className="flex gap-3">
             {locales.map((language) => (

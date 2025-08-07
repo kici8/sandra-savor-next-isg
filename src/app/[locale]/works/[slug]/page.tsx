@@ -1,13 +1,10 @@
 import { fetchData } from "@/graphql/fetchData";
-import {
-  WorksForWorkQuery,
-  WorksForWorkStaticParamsQuery,
-} from "@/graphql/generated/graphql";
+import { WorksForWorkQuery } from "@/graphql/generated/graphql";
+import { setStaticParamsLocale } from "next-international/server";
 import Image from "next/image";
 import { notFound } from "next/navigation";
+import { getI18n, getStaticParams } from "../../../../../locales/server";
 import { worksForWork, worksForWorkStaticParams } from "./queries";
-import { setStaticParamsLocale } from "next-international/server";
-import { getStaticParams } from "../../../../../locales/server";
 
 // Genera tutti i parametri statici per ogni locale e ogni work
 export async function generateStaticParams() {
@@ -26,6 +23,8 @@ export async function generateStaticParams() {
   return allParams;
 }
 
+// FIXME:
+// ⨯ ESLint: Plugin "react-hooks" was conflicted between ".eslintrc.json" and ".eslintrc.json » eslint-config-next/core-web-vitals » /app/node_modules/eslint-config-next/index.js » plugin:react-hooks/recommended".
 // Page component
 export default async function Page({
   params,
@@ -35,19 +34,20 @@ export default async function Page({
   // Data fetching
   const { slug, locale } = await params;
   setStaticParamsLocale(locale);
-
   const data: WorksForWorkQuery = await fetchData(worksForWork, {
     slug: slug,
     locale: locale,
   });
+
+  const t = await getI18n();
 
   // 404 if no work found
   if (!data || !data.works || data.works?.data.length === 0) {
     notFound();
   }
 
+  // Data extraction
   const work = data.works?.data[0];
-
   const year = work.attributes?.dateOfCreation
     ? new Date(work.attributes.dateOfCreation).getFullYear()
     : undefined;
@@ -68,17 +68,27 @@ export default async function Page({
         <p className="text-sm lg:col-span-5">{work.attributes?.description}</p>
       </div>
 
-      {/* INFO */}
+      {/* INFO 
+          // TODO: add more info like technique, category.
+      */}
       <div className="col-span-4 row-start-3 py-8 lg:col-span-5 lg:row-start-2">
         <div className="grid grid-cols-5 gap-4 border-b border-blue-900 py-2">
-          <span className="col-span-3 text-sm font-medium">Informazioni</span>
+          <span className="col-span-3 text-sm font-medium">
+            {t("work.info.title")}
+          </span>
         </div>
-        {year && <InfoRow title="Anno" value={year} />}
+        {year && <InfoRow title={t("work.info.year")} value={year} />}
         {work.attributes?.widthInCm && (
-          <InfoRow title="width" value={`${work.attributes.widthInCm} cm`} />
+          <InfoRow
+            title={t("work.info.width")}
+            value={`${work.attributes.widthInCm} cm`}
+          />
         )}
         {work.attributes?.heightInCm && (
-          <InfoRow title="Height" value={`${work.attributes.heightInCm} cm`} />
+          <InfoRow
+            title={t("work.info.height")}
+            value={`${work.attributes.heightInCm} cm`}
+          />
         )}
       </div>
 
