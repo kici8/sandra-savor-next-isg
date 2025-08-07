@@ -11,9 +11,18 @@ export default {
     },
   },
   about: {
-    title: "Che bello incontrarsi",
+    title: "Che bello<br/>incontrarsi",
     description:
       "Sono Sandra, illustratrice e artista con casa vicino a Venezia. Lavoro con acquerello, collage e tecniche tradizionali, a volte mescolandole al digitale. Mi piace ciò che è imperfetto, tattile e delicato, in silenzioso contrasto con un panorama visivo sempre più uniforme e generato.",
+    info: {
+      servicesLabel: "Servizi",
+      services:
+        "tavole uniche, illustrazioni editoriali, illustrazioni commerciali, corsi e workshop",
+      emailLabel: "Email",
+      locationLabel: "Sede",
+      location: "Venezia, Italia",
+      socialLabel: "Social",
+    },
   },
   work: {
     info: {

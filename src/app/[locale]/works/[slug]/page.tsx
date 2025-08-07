@@ -117,11 +117,11 @@ const InfoRow = ({
   title,
   value,
 }: {
-  title: string;
-  value: string | number;
+  title: React.ReactNode;
+  value: React.ReactNode;
 }) => (
-  <div className="grid grid-cols-5 gap-4 border-b border-blue-900 py-2 text-sm">
-    <span className="col-span-2">{title}:</span>
-    <span className="col-span-3 font-medium">{value}</span>
-  </div>
+  <dl className="grid grid-cols-5 gap-4 border-b border-blue-900 py-2 text-sm">
+    <dt className="col-span-2 block">{title}</dt>
+    <dd className="col-span-3 block font-medium">{value}</dd>
+  </dl>
 );

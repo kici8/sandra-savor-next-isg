@@ -11,9 +11,18 @@ export default {
     },
   },
   about: {
-    title: "Che bello incontrarsi",
+    title: "Che bello<br/>incontrarsi",
     description:
-      "I'm Sandra, an illustrator and artist living near Venice. I work with watercolor, collage, and traditional techniques, sometimes blending them with digital media. I’m drawn to what is imperfect, tactile, and delicate — in quiet contrast to an increasingly uniform and generated visual landscape.",
+      "I'm Sandra, an illustrator and artist living near Venice. I work with watercolor, collage, and traditional techniques, sometimes blending them with digital media. I’m drawn to what is imperfect, tactile, and delicate in quiet contrast to an increasingly uniform and generated visual landscape.",
+    info: {
+      servicesLabel: "Services",
+      services:
+        "Original artworks, Editorial and Commercial illustrations, Courses and workshops",
+      emailLabel: "Email",
+      locationLabel: "Location",
+      location: "Venice, Italy",
+      socialLabel: "Social",
+    },
   },
   work: {
     info: {
