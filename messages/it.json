@@ -1,0 +1,35 @@
+{
+  "layout": {
+    "header": {
+      "works": "Lavori",
+      "info": "Info"
+    },
+    "footer": {
+      "legal": "Note legali",
+      "privacy": "Privacy",
+      "credit": "Crediti"
+    }
+  },
+  "about": {
+    "title": "Che bello<br/>incontrarsi",
+    "description": "Sono Sandra, illustratrice e artista con casa vicino a Venezia. Lavoro con acquerello, collage e tecniche tradizionali, a volte mescolandole al digitale. Mi piace ciò che è imperfetto, tattile e delicato, in silenzioso contrasto con un panorama visivo sempre più uniforme e generato.",
+    "info": {
+      "servicesLabel": "Servizi",
+      "services": "tavole uniche, illustrazioni editoriali, illustrazioni commerciali, corsi e workshop",
+      "emailLabel": "Email",
+      "locationLabel": "Sede",
+      "location": "Venezia, Italia",
+      "socialLabel": "Social"
+    }
+  },
+  "work": {
+    "info": {
+      "title": "Dettagli",
+      "year": "Anno",
+      "width": "Larghezza",
+      "height": "Altezza",
+      "technique": "Tecnica",
+      "category": "Categoria"
+    }
+  }
+}

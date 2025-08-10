@@ -1,15 +1,11 @@
-import { createI18nMiddleware } from "next-international/middleware";
-import { NextRequest } from "next/server";
+import createMiddleware from "next-intl/middleware";
+import { routing } from "./i18n/routing";
 
-const I18nMiddleware = createI18nMiddleware({
-  locales: ["en", "it"],
-  defaultLocale: "en",
-});
-
-export function middleware(request: NextRequest) {
-  return I18nMiddleware(request);
-}
+export default createMiddleware(routing);
 
 export const config = {
-  matcher: ["/((?!api|static|.*\\..*|_next|favicon.ico|robots.txt).*)"],
+  // Match all pathnames except for
+  // - … if they start with `/api`, `/trpc`, `/_next` or `/_vercel`
+  // - … the ones containing a dot (e.g. `favicon.ico`)
+  matcher: "/((?!api|trpc|_next|_vercel|.*\\..*).*)",
 };

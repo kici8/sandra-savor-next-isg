@@ -1,5 +1,7 @@
-import { setStaticParamsLocale } from "next-international/server";
-import { getScopedI18n } from "../../../../locales/server";
+import { routing } from "@/i18n/routing";
+import { hasLocale } from "next-intl";
+import { getTranslations, setRequestLocale } from "next-intl/server";
+import { notFound } from "next/navigation";
 
 // Page component
 export default async function Page({
@@ -7,11 +9,13 @@ export default async function Page({
 }: {
   params: Promise<{ locale: string }>;
 }) {
-  const { locale } = await params;
-  setStaticParamsLocale(locale);
-
   // TODO: move these texts to the strapi backOffice
-  const t = await getScopedI18n("about");
+  const { locale } = await params;
+  if (!hasLocale(routing.locales, locale)) {
+    notFound();
+  }
+  setRequestLocale(locale);
+  const t = await getTranslations("about");
 
   return (
     <div className="mx-auto grid max-w-container2560 grid-cols-4 gap-4 px-4 lg:grid-cols-12">

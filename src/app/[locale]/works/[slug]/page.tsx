@@ -1,30 +1,30 @@
 import { fetchData } from "@/graphql/fetchData";
 import { WorksForWorkQuery } from "@/graphql/generated/graphql";
-import { setStaticParamsLocale } from "next-international/server";
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import { getI18n, getStaticParams } from "../../../../../locales/server";
 import { worksForWork, worksForWorkStaticParams } from "./queries";
+import { routing } from "@/i18n/routing";
+import { getTranslations, setRequestLocale } from "next-intl/server";
+import { hasLocale } from "next-intl";
 
 // Genera tutti i parametri statici per ogni locale e ogni work
 export async function generateStaticParams() {
-  const locales = getStaticParams();
   const allParams: { locale: string; slug: string }[] = [];
 
-  for (const { locale } of locales) {
-    const data = await fetchData(worksForWorkStaticParams, { locale });
-    if (data?.works?.data) {
-      data.works.data.forEach((work: any) => {
-        allParams.push({ locale, slug: work.attributes.slug });
-      });
-    }
-  }
+  routing.locales.forEach((locale) => {
+    const data = fetchData(worksForWorkStaticParams, { locale });
+    data.then((result) => {
+      if (result?.works?.data) {
+        result.works.data.forEach((work: any) => {
+          allParams.push({ locale, slug: work.attributes.slug });
+        });
+      }
+    });
+  });
 
   return allParams;
 }
 
-// FIXME:
-// ⨯ ESLint: Plugin "react-hooks" was conflicted between ".eslintrc.json" and ".eslintrc.json » eslint-config-next/core-web-vitals » /app/node_modules/eslint-config-next/index.js » plugin:react-hooks/recommended".
 // Page component
 export default async function Page({
   params,
@@ -33,13 +33,17 @@ export default async function Page({
 }) {
   // Data fetching
   const { slug, locale } = await params;
-  setStaticParamsLocale(locale);
+  if (!hasLocale(routing.locales, locale)) {
+    notFound();
+  }
+  setRequestLocale(locale);
+
   const data: WorksForWorkQuery = await fetchData(worksForWork, {
     slug: slug,
     locale: locale,
   });
 
-  const t = await getI18n();
+  const t = await getTranslations("work");
 
   // 404 if no work found
   if (!data || !data.works || data.works?.data.length === 0) {
@@ -74,19 +78,19 @@ export default async function Page({
       <div className="col-span-4 row-start-3 py-8 lg:col-span-5 lg:row-start-2">
         <div className="grid grid-cols-5 gap-4 border-b border-blue-900 py-2">
           <span className="col-span-3 text-sm font-medium">
-            {t("work.info.title")}
+            {t("info.title")}
           </span>
         </div>
-        {year && <InfoRow title={t("work.info.year")} value={year} />}
+        {year && <InfoRow title={t("info.year")} value={year} />}
         {work.attributes?.widthInCm && (
           <InfoRow
-            title={t("work.info.width")}
+            title={t("info.width")}
             value={`${work.attributes.widthInCm} cm`}
           />
         )}
         {work.attributes?.heightInCm && (
           <InfoRow
-            title={t("work.info.height")}
+            title={t("info.height")}
             value={`${work.attributes.heightInCm} cm`}
           />
         )}

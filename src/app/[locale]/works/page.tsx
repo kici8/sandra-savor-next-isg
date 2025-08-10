@@ -1,9 +1,12 @@
 import { fetchData } from "@/graphql/fetchData";
 import { graphql } from "@/graphql/generated/gql";
 import { WorksForWorksQuery } from "@/graphql/generated/graphql";
-import { setStaticParamsLocale } from "next-international/server";
+import { routing } from "@/i18n/routing";
+import { hasLocale } from "next-intl";
+import { setRequestLocale } from "next-intl/server";
 import Image from "next/image";
 import Link from "next/link";
+import { notFound } from "next/navigation";
 
 const worksForWorks = graphql(/* GraphQL */ `
   query worksForWorks($locale: I18NLocaleCode) {
@@ -37,7 +40,10 @@ export default async function Work({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  setStaticParamsLocale(locale);
+  if (!hasLocale(routing.locales, locale)) {
+    notFound();
+  }
+  setRequestLocale(locale);
 
   // const data = await getData(locale);
   const data: WorksForWorksQuery = await fetchData(worksForWorks, {

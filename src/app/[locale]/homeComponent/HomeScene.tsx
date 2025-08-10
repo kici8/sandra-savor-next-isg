@@ -5,7 +5,7 @@ import { Backdrop, SoftShadows } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
 import { useRef, useState } from "react";
 import { ScrollContainer } from "./ScrollContainer";
-import { useCurrentLocale } from "../../../../locales/client";
+import { useLocale } from "next-intl";
 
 type HomeSceneProps = {
   works: WorksForHomeQuery["works"];
@@ -18,7 +18,7 @@ export type SimpleWork = {
 };
 
 const HomeScene: React.FC<HomeSceneProps> = ({ works }) => {
-  const locale = useCurrentLocale();
+  const locale = useLocale();
   const wrapperRef = useRef<HTMLDivElement>(null);
 
   const [activeCard, setActiveCard] = useState<SimpleWork | null>(null);

@@ -1,6 +1,9 @@
-/** @type {import('next').NextConfig} */
+import createNextIntlPlugin from "next-intl/plugin";
 
-module.exports = {
+const withNextIntl = createNextIntlPlugin();
+
+/** @type {import('next').NextConfig} */
+const nextConfig = {
   images: {
     remotePatterns: [
       {
@@ -10,15 +13,18 @@ module.exports = {
       },
     ],
   },
-  // Other Next.js configuration ...
-  // Webpack configuration for handling GLSL files
+  experimental: {
+    // Necessario se vuoi che next-intl generi automaticamente il type delle chiavi dei messaggi
+    createMessagesDeclaration: "./messages/en.json",
+  },
   webpack: (config, options) => {
     config.module.rules.push({
       test: /\.(glsl|vs|fs|vert|frag)$/,
       exclude: /node_modules/,
       use: [options.defaultLoaders.babel, "raw-loader", "glslify-loader"],
     });
-
     return config;
   },
 };
+
+export default withNextIntl(nextConfig);
