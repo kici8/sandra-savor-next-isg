@@ -1,6 +1,11 @@
 import createNextIntlPlugin from "next-intl/plugin";
 
-const withNextIntl = createNextIntlPlugin();
+const withNextIntl = createNextIntlPlugin({
+  experimental: {
+    // Necessario se vuoi che next-intl generi automaticamente il type delle chiavi dei messaggi
+    createMessagesDeclaration: "./messages/en.json",
+  },
+});
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -12,10 +17,6 @@ const nextConfig = {
         pathname: "**",
       },
     ],
-  },
-  experimental: {
-    // Necessario se vuoi che next-intl generi automaticamente il type delle chiavi dei messaggi
-    createMessagesDeclaration: "./messages/en.json",
   },
   webpack: (config, options) => {
     config.module.rules.push({
