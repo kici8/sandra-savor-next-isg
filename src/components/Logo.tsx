@@ -1,10 +1,14 @@
 "use client";
 
+import { cn } from "@/utils/cn";
 import { motion } from "framer-motion";
 import { useState } from "react";
 
-const Logo = () => {
+type LogoProps = React.SVGProps<SVGSVGElement>;
+
+const Logo = (props: LogoProps) => {
   const [isHover, setIsHover] = useState(false);
+  const { className, ...rest } = props;
 
   return (
     <svg
@@ -16,9 +20,10 @@ const Logo = () => {
       strokeMiterlimit="1.5"
       clipRule="evenodd"
       viewBox="0 0 24 24"
-      className="h-12 w-12"
       onMouseEnter={() => setIsHover(true)}
       onMouseLeave={() => setIsHover(false)}
+      className={cn("h-8 w-8", className)}
+      {...rest}
     >
       <path fill="none" d="M0 0h24v24H0z" />
       <motion.path

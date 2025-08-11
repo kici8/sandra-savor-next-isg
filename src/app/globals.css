@@ -4,10 +4,20 @@
 
 /* fluid typography simulator
 https://www.smashingmagazine.com/2022/01/modern-fluid-typography-css-clamp/
-https://modern-fluid-typography.vercel.app/ */
+https://modern-fluid-typography.vercel.app/ 
+
+root font size 16px
+min size 14px
+max size 28px
+fluid size 0.75vw
+relative size 1rem
+clamp(0.875rem, 0.75vw + 1rem, 1.75rem)
+
+*/
+
 
 :root {
-font-size: clamp(0.875rem, 0.75vw + 1rem, 2rem);
+font-size: clamp(0.875rem, 0.75vw + 1rem, 1.75rem);
   /* --foreground-rgb: 0, 0, 0;
   --background-start-rgb: 214, 219, 220;
   --background-end-rgb: 255, 255, 255; */

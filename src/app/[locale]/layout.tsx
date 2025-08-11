@@ -84,16 +84,16 @@ export default async function RootLayout({
         className={`${aujournuit.variable} ${ronzino.variable} flex min-h-svh flex-col bg-orange-50 font-ronzino text-blue-900 dark:bg-black dark:text-orange-50`}
       >
         <NextIntlClientProvider>
-          <header className="relative z-30 mx-auto flex h-24 w-full max-w-container2560 shrink-0 items-center px-4">
+          <header className="relative z-30 mx-auto flex h-16 w-full max-w-container2560 shrink-0 items-center px-4 py-2">
             <nav className="flex flex-1 font-medium ">
               <ul className="relative flex flex-grow items-center gap-4">
                 <li className="mr-auto flex items-center gap-4">
                   <Link
                     href={`/${locale}`}
-                    className="flex items-center gap-3"
+                    className="flex items-center gap-3 leading-none"
                     aria-label="Sandra savorgnani home"
                   >
-                    <span className="">Sandra Savorgnani</span>
+                    Sandra Savorgnani
                   </Link>
                 </li>
                 <li>
@@ -106,10 +106,15 @@ export default async function RootLayout({
             </nav>
           </header>
           <div className="flex-1 shrink-0">{children}</div>
-          <footer className="relative mx-auto flex h-24 w-full max-w-container2560 shrink-0 items-center px-4">
-            <Logo />
+          <footer className="relative flex min-h-16 w-full max-w-container2560 shrink-0 flex-col items-center justify-center px-4 py-2 lg:flex-row lg:justify-between">
+            <Link
+              href={`/${locale}`}
+              className="mb-2 flex items-center lg:mb-0"
+            >
+              <Logo />
+            </Link>
             {/* FIXME: create these pages */}
-            <div className="ml-auto flex items-center gap-2 text-sm">
+            <div className="flex items-center gap-2 text-sm">
               <Link href={`/${locale}/legal`}>{t("footer.legal")}</Link>|
               <Link href={`/${locale}/privacy`}>{t("footer.privacy")}</Link>|
               <Link href={`/${locale}/credit`}>{t("footer.credit")}</Link>

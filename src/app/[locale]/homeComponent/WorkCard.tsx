@@ -16,7 +16,16 @@ type CardProps = {
   totalNumberOfCards: number;
   containerRef: React.RefObject<HTMLDivElement | null>;
   setActiveCard: (index: number) => void;
+  handleClick: (index: number) => void;
 };
+
+// FIXME:
+// The start animation is not that good
+// There is a flash at the start when the cards are in position and then the animation start
+// the start animation block and is blocked by the scroll
+// // this is very annoying, especially when navigating back and forth
+// we need a transition or a leaving animation when clicking on a card
+// we need simplify this mess
 
 export const WorkCard: React.FC<CardProps> = ({
   work,
@@ -27,6 +36,7 @@ export const WorkCard: React.FC<CardProps> = ({
   totalNumberOfCards,
   containerRef,
   setActiveCard,
+  handleClick,
 }) => {
   const cardGroupRef = useRef<THREE.Group>(null);
   const cardMeshRef = useRef<THREE.Mesh>(null);
@@ -304,7 +314,15 @@ export const WorkCard: React.FC<CardProps> = ({
 
   return (
     <group ref={cardGroupRef}>
-      <mesh ref={cardMeshRef} position={[0, 0, 0.6]} receiveShadow castShadow>
+      <mesh
+        ref={cardMeshRef}
+        position={[0, 0, 0.6]}
+        receiveShadow
+        castShadow
+        onClick={() => {
+          handleClick(index);
+        }}
+      >
         <planeGeometry args={[cardWidth, cardHeight, 24, 32]} />
         <meshStandardMaterial
           map={image}

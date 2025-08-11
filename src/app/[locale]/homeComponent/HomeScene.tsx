@@ -6,6 +6,7 @@ import { Canvas } from "@react-three/fiber";
 import { useRef, useState } from "react";
 import { ScrollContainer } from "./ScrollContainer";
 import { useLocale } from "next-intl";
+import { useRouter } from "next/navigation";
 
 type HomeSceneProps = {
   works: WorksForHomeQuery["works"];
@@ -20,6 +21,7 @@ export type SimpleWork = {
 const HomeScene: React.FC<HomeSceneProps> = ({ works }) => {
   const locale = useLocale();
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
 
   const [activeCard, setActiveCard] = useState<SimpleWork | null>(null);
 
@@ -29,6 +31,7 @@ const HomeScene: React.FC<HomeSceneProps> = ({ works }) => {
     const firstImage = work.attributes?.images.data[0].attributes?.url;
     const title = work.attributes?.title;
     const slug = work.attributes?.slug;
+
     if (firstImage && title && slug) {
       filteredWorks.push({
         title,
@@ -39,14 +42,18 @@ const HomeScene: React.FC<HomeSceneProps> = ({ works }) => {
   });
 
   const handleActiveCard = (index: number) => {
-    setActiveCard(filteredWorks[index] || null);
+    const activeWork = filteredWorks[index];
+    if (!activeWork) return;
+    setActiveCard(activeWork);
+    // TODO: prefetch all of them before?
+    console.log("Prefetching work:", activeWork.slug);
+    router.prefetch(`/${locale}/works/${activeWork.slug}`);
   };
 
-  const handleNavigate = (slug: string) => {
-    setTimeout(() => {
-      // TODO: locale
-      window.location.href = `${locale}/works/${slug}`;
-    }, 1200);
+  const handleNavigate = (index: number) => {
+    const slug = filteredWorks[index]?.slug;
+    if (!slug) return;
+    router.push(`/${locale}/works/${slug}`);
   };
 
   return (
@@ -81,10 +88,11 @@ const HomeScene: React.FC<HomeSceneProps> = ({ works }) => {
             works={filteredWorks}
             containerRef={wrapperRef}
             setActiveCard={handleActiveCard}
+            handleClick={handleNavigate}
           />
         </Canvas>
       </div>
-      <div className="absolute left-12 top-1/2 flex -translate-y-1/2 transform flex-col gap-1">
+      {/* <div className="absolute left-12 top-1/2 flex -translate-y-1/2 transform flex-col gap-1">
         {filteredWorks.map((work) => (
           <button onClick={() => handleNavigate(work.slug)} key={work.slug}>
             <h2 className="text-sm font-bold">
@@ -93,7 +101,7 @@ const HomeScene: React.FC<HomeSceneProps> = ({ works }) => {
             </h2>
           </button>
         ))}
-      </div>
+      </div> */}
     </>
   );
 };
