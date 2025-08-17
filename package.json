@@ -25,6 +25,7 @@
     "maath": "^0.10.7",
     "next": "15.4.6",
     "next-intl": "^4.3.4",
+    "next-view-transitions": "^0.3.4",
     "normalize-wheel": "^1.0.1",
     "react": "19.1.1",
     "react-dom": "19.1.1",

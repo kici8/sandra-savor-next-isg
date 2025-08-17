@@ -41,9 +41,22 @@ body {
     rgb(var(--background-start-rgb)); */
 }
 
+::view-transition-group(root-layout) {
+  z-index: auto !important;
+}
 
-/* font-size: clamp(14px, 1vw + 0.5rem, 20px); */
-/* html {
-    font-size: clamp(14px, 0.65vw + 0.75rem, 24px);
-} */
- 
+::view-transition-image-pair(root-layout) {
+  isolation: isolate;
+  will-change: transform, opacity, clip-path;
+  z-index: 1;
+}
+
+::view-transition-new(root-layout) {
+  z-index: 10000 !important;
+  animation: none !important;
+}
+
+::view-transition-old(root-layout) {
+  z-index: 1 !important;
+  animation: none !important;
+}

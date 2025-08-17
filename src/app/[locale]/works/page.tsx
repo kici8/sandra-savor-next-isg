@@ -4,8 +4,8 @@ import { WorksForWorksQuery } from "@/graphql/generated/graphql";
 import { routing } from "@/i18n/routing";
 import { hasLocale } from "next-intl";
 import { setRequestLocale } from "next-intl/server";
+import { Link } from "next-view-transitions";
 import Image from "next/image";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 
 const worksForWorks = graphql(/* GraphQL */ `

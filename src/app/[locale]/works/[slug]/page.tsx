@@ -6,6 +6,7 @@ import { worksForWork, worksForWorkStaticParams } from "./queries";
 import { routing } from "@/i18n/routing";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { hasLocale } from "next-intl";
+import PageTransitionContainer from "@/components/PageTransitionContainer";
 
 // Genera tutti i parametri statici per ogni locale e ogni work
 export async function generateStaticParams() {
@@ -60,7 +61,7 @@ export default async function Page({
   // fast col generation https://www.tailwindgen.com/
 
   return (
-    <div className="mx-auto grid max-w-container2560 grid-cols-4 gap-4 px-4 lg:grid-cols-12 lg:grid-rows-[auto,1fr]">
+    <PageTransitionContainer className="lg:grid-rows-[auto,1fr]">
       {/* 
         // TODO: rewrite the layout to use sticky positioning for title and info
         // TITLE AND DESCRIPTION
@@ -113,7 +114,7 @@ export default async function Page({
           ) : null,
         )}
       </div>
-    </div>
+    </PageTransitionContainer>
   );
 }
 
