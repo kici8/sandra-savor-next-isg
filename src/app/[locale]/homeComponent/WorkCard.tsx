@@ -2,7 +2,6 @@
 
 import { useFrame, useLoader } from "@react-three/fiber";
 import { useGesture } from "@use-gesture/react";
-import { useMotionValue, useTransform } from "framer-motion";
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { SimpleWork } from "./HomeScene";
@@ -71,8 +70,8 @@ export const WorkCard: React.FC<CardProps> = ({
   const originalPositions = useRef<Float32Array | null>(null);
   const isOriginalPositionCreated = useRef(false);
   const smoothedCurvature = useRef(0);
-  const speed = useMotionValue(0);
-  const transformedSpeed = useTransform(speed, [0, 10], [0, 1]);
+  const speed = useRef(0);
+  const transformedSpeed = useRef(0);
 
   const setLastDirection = (number: number) => {
     if (number === 0) return;
@@ -115,15 +114,18 @@ export const WorkCard: React.FC<CardProps> = ({
 
     const difference = Math.abs(current - previous);
     if (difference > 0.0001) {
-      speed.set(difference / delta);
+      speed.current = difference / delta;
     } else {
-      speed.set(0);
+      speed.current = 0;
     }
     scrollData.current.previous = current;
 
+    // Update transformedSpeed (mapping 0-10 to 0-1)
+    transformedSpeed.current = Math.max(0, Math.min(1, speed.current / 10));
+
     // SNAP LOGIC
     const snapThreshold = 0.05;
-    if (speed.get() < snapThreshold && !isDragging.current) {
+    if (speed.current < snapThreshold && !isDragging.current) {
       if (snapTarget.current === null) {
         // Compute the closest card only once
         const centerPositions = Array.from(
@@ -183,7 +185,7 @@ export const WorkCard: React.FC<CardProps> = ({
     // UPDATE MESH
 
     // get the curvature from the speed
-    const smoothCurvatureTarget = transformedSpeed.get();
+    const smoothCurvatureTarget = transformedSpeed.current;
     smoothedCurvature.current +=
       (smoothCurvatureTarget - smoothedCurvature.current) * 0.02;
 
