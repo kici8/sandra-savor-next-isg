@@ -28,12 +28,12 @@ export default async function Page({
           className="text-center text-sm"
           dangerouslySetInnerHTML={{ __html: t("description") }}
         />
-        <div className="w-[calc(100%-2rem)] px-4 py-8">
+        <div className="py-8">
           <InfoRow title={t("info.servicesLabel")} value={t("info.services")} />
           <InfoRow title={t("info.locationLabel")} value={t("info.location")} />
           <InfoRow
             title={t("info.emailLabel")}
-            value={`<a href="mailto:info@savorgnanisandra.it" target=”_blank”>info@savorgnanisandra.it</a>`}
+            value={`<a href="mailto:info@savorgnanisandra.it" target=”_blank” class="break-all">info@savorgnanisandra.it</a>`}
           />
           <InfoRow
             title={t("info.socialLabel")}
