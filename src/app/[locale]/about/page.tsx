@@ -2,6 +2,7 @@ import { routing } from "@/i18n/routing";
 import { hasLocale } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
+import AboutScene from "./AboutScene";
 
 // TODO: no need to use async if no data fetching is needed
 // TODO: Or move these texts to the strapi backOffice
@@ -19,16 +20,22 @@ export default async function Page({
 
   return (
     <div className="mx-auto grid max-w-container2560 grid-cols-4 gap-4 px-4 lg:grid-cols-12">
-      <div className="col-span-4 flex flex-col items-center gap-4 lg:col-span-6 lg:col-start-4">
-        <h1
-          className="mb-4 text-center font-aujournuit text-6xl leading-none"
-          dangerouslySetInnerHTML={{ __html: t("title") }}
-        />
+      <div className="col-span-4 flex flex-col items-center lg:col-span-6 lg:col-start-4">
+        <div className="relative w-full pb-16 pt-32">
+          <h1
+            className="pointer-events-none relative z-10 text-center font-aujournuit text-7xl leading-[0.8]"
+            dangerouslySetInnerHTML={{ __html: t("title") }}
+          />
+          <div className="absolute top-0 h-full w-full">
+            <AboutScene />
+          </div>
+        </div>
+
         <p
-          className="text-center text-sm"
+          className="relative z-10 -mt-4 text-center text-sm"
           dangerouslySetInnerHTML={{ __html: t("description") }}
         />
-        <div className="py-8">
+        <div className="py-16">
           <InfoRow title={t("info.servicesLabel")} value={t("info.services")} />
           <InfoRow title={t("info.locationLabel")} value={t("info.location")} />
           <InfoRow
@@ -52,7 +59,7 @@ const InfoRow = ({
   title: React.ReactNode;
   value: string;
 }) => (
-  <dl className="grid grid-cols-6 gap-4 border-b border-blue-900 py-2 text-sm">
+  <dl className="grid grid-cols-6 gap-4 border-b border-light-color py-2 text-sm">
     <dt className="col-span-2 block">{title}</dt>
     <dd
       className="col-span-4 block font-medium"

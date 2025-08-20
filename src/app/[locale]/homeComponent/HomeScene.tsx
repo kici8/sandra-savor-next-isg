@@ -72,7 +72,6 @@ const HomeScene: React.FC<HomeSceneProps> = ({ works }) => {
             scale={[8, 8, 12]}
             receiveShadow
           >
-            <meshStandardMaterial color="rgb(255, 247, 237)" />
             <shadowMaterial transparent opacity={0.1} />
           </Backdrop>
           <ambientLight intensity={0.4} />

@@ -78,14 +78,17 @@ export default async function RootLayout({
   setRequestLocale(locale);
   const t = await getTranslations("layout");
 
+  // Preloader
+  // https://stackoverflow.com/questions/54158994/react-suspense-lazy-delay
+
   return (
     <html lang={locale}>
       <body
-        className={`${aujournuit.variable} ${ronzino.variable} flex min-h-svh flex-col bg-orange-50 font-ronzino text-blue-900 dark:bg-black dark:text-orange-50`}
+        className={`${aujournuit.variable} ${ronzino.variable} bg-light-bg text-light-color flex min-h-svh flex-col font-ronzino dark:bg-black dark:text-orange-50`}
       >
         <NextIntlClientProvider>
-          <header className="relative z-30 mx-auto flex h-16 w-full max-w-container2560 shrink-0 items-center px-4 py-2">
-            <nav className="flex flex-1 font-medium ">
+          <header className="relative z-30 mx-auto flex min-h-12 w-full max-w-container2560 shrink-0 items-center px-4 py-2">
+            <nav className="isolate flex flex-1 text-sm font-medium mix-blend-difference">
               <ul className="relative flex flex-grow items-center gap-4">
                 <li className="mr-auto flex items-center gap-4">
                   <Link
@@ -106,7 +109,7 @@ export default async function RootLayout({
             </nav>
           </header>
           <div className="flex-1 shrink-0">{children}</div>
-          <footer className="relative flex min-h-16 w-full max-w-container2560 shrink-0 flex-col items-center justify-center px-4 py-2 lg:flex-row lg:justify-between">
+          <footer className="relative flex min-h-12 w-full max-w-container2560 shrink-0 flex-col items-center justify-center px-4 py-2 lg:flex-row lg:justify-between">
             <Link
               href={`/${locale}`}
               className="mb-2 flex items-center lg:mb-0"

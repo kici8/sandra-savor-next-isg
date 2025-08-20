@@ -15,6 +15,10 @@ const config: Config = {
       maxWidth: {
         container2560: "2560px",
       },
+      colors: {
+        "light-color": "rgb(37, 39, 38)",
+        "light-bg": "#FFF7ED",
+      },
       backgroundImage: {
         "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
         "gradient-conic":

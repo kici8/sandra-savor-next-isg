@@ -124,7 +124,7 @@ const InfoRow = ({
   title: React.ReactNode;
   value: React.ReactNode;
 }) => (
-  <dl className="grid grid-cols-5 gap-4 border-b border-blue-900 py-2 text-sm">
+  <dl className="grid grid-cols-5 gap-4 border-b border-light-color py-2 text-sm">
     <dt className="col-span-2 block">{title}</dt>
     <dd className="col-span-3 block font-medium">{value}</dd>
   </dl>
