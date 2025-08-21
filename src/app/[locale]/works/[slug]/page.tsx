@@ -10,19 +10,23 @@ import Image from "next/image";
 import { worksForWork, worksForWorkStaticParams } from "./queries";
 
 // Genera tutti i parametri statici per ogni locale e ogni work
-export async function generateStaticParams({
-  params: { locale },
-}: {
-  params: { locale: string };
-}) {
-  const data: WorksForWorkStaticParamsQuery = await fetchData(
-    worksForWorkStaticParams,
-    { locale },
+export async function generateStaticParams() {
+  const allParams: { locale: string; slug: string }[] = [];
+
+  await Promise.all(
+    routing.locales.map(async (locale) => {
+      const result = await fetchData(worksForWorkStaticParams, { locale });
+      if (result?.works?.data) {
+        result.works.data.forEach((work) => {
+          if (work.attributes?.slug) {
+            allParams.push({ locale, slug: work.attributes?.slug });
+          }
+        });
+      }
+    }),
   );
-  const staticParams = data.works?.data.map((work: any) => ({
-    slug: work.attributes.slug,
-  }));
-  return staticParams ?? [];
+
+  return allParams;
 }
 
 // Page component
