@@ -1,28 +1,28 @@
 import { fetchData } from "@/graphql/fetchData";
-import { WorksForWorkQuery } from "@/graphql/generated/graphql";
-import Image from "next/image";
-import { notFound } from "next/navigation";
-import { worksForWork, worksForWorkStaticParams } from "./queries";
+import {
+  WorksForWorkQuery,
+  WorksForWorkStaticParamsQuery,
+} from "@/graphql/generated/graphql";
 import { routing } from "@/i18n/routing";
-import { getTranslations, setRequestLocale } from "next-intl/server";
 import { hasLocale } from "next-intl";
+import { getTranslations, setRequestLocale } from "next-intl/server";
+import Image from "next/image";
+import { worksForWork, worksForWorkStaticParams } from "./queries";
 
 // Genera tutti i parametri statici per ogni locale e ogni work
-export async function generateStaticParams() {
-  const allParams: { locale: string; slug: string }[] = [];
-
-  routing.locales.forEach((locale) => {
-    const data = fetchData(worksForWorkStaticParams, { locale });
-    data.then((result) => {
-      if (result?.works?.data) {
-        result.works.data.forEach((work: any) => {
-          allParams.push({ locale, slug: work.attributes.slug });
-        });
-      }
-    });
-  });
-
-  return allParams;
+export async function generateStaticParams({
+  params: { locale },
+}: {
+  params: { locale: string };
+}) {
+  const data: WorksForWorkStaticParamsQuery = await fetchData(
+    worksForWorkStaticParams,
+    { locale },
+  );
+  const staticParams = data.works?.data.map((work: any) => ({
+    slug: work.attributes.slug,
+  }));
+  return staticParams ?? [];
 }
 
 // Page component
