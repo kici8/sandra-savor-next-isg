@@ -1,7 +1,9 @@
 "use client";
 
+import { useGSAP } from "@gsap/react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { RefObject, useEffect, useRef } from "react";
+import gsap from "gsap/gsap-core";
+import { RefObject, Suspense, useEffect, useRef } from "react";
 import * as THREE from "three";
 
 type AboutSceneProps = {};
@@ -9,16 +11,36 @@ type AboutSceneProps = {};
 const AboutScene: React.FC<AboutSceneProps> = ({}) => {
   const wrapperRef = useRef<HTMLDivElement>(null);
 
+  // TODO: test reveal animation
+  useGSAP(() => {
+    gsap.fromTo(
+      wrapperRef.current,
+      {
+        opacity: 0,
+      },
+      {
+        opacity: 1,
+        duration: 1.5,
+        ease: "power2.out",
+      },
+    );
+  });
+
   return (
     <div className="h-full w-full touch-none" ref={wrapperRef}>
-      <Canvas
-        className=" -none"
-        camera={{ isPerspectiveCamera: true, position: [0, 0, 10] }}
-      >
-        <ambientLight intensity={1.6} />
-        <directionalLight position={[2, 4, 32]} intensity={2.6} />
-        <AboutImage wrapperRef={wrapperRef} />
-      </Canvas>
+      <Suspense fallback={null}>
+        <Canvas
+          style={{
+            background: "transparent",
+          }}
+          camera={{ isPerspectiveCamera: true, position: [0, 0, 10] }}
+          gl={{ alpha: true, antialias: true }}
+        >
+          <ambientLight intensity={1.6} />
+          <directionalLight position={[2, 4, 32]} intensity={2.6} />
+          <AboutImage wrapperRef={wrapperRef} />
+        </Canvas>
+      </Suspense>
     </div>
   );
 };
@@ -84,8 +106,8 @@ const AboutImage = ({ wrapperRef }: AboutImageProps) => {
     const orig = originalPositions.current;
 
     // Animazione vento
-    const time = performance.now() * 0.003;
-    const windStrength = 0.2;
+    const time = performance.now() * 0.004;
+    const windStrength = 0.3;
 
     for (let i = 0; i < meshPositionArray.length; i += 3) {
       const x = orig[i];
@@ -105,7 +127,7 @@ const AboutImage = ({ wrapperRef }: AboutImageProps) => {
       // Calcola la distanza tra il vertice e il mouse (in coordinate card)
       const dist = Math.sqrt((x - mouseCardX) ** 2 + (-y - mouseCardY) ** 2);
 
-      const maxInflate = 0.8;
+      const maxInflate = 1.2;
       const minInflate = 0.2;
       const influenceRadius = cardWidth * 1.2;
       const normalizedDist = Math.min(dist / influenceRadius, 1);
@@ -114,8 +136,8 @@ const AboutImage = ({ wrapperRef }: AboutImageProps) => {
 
       // Effetto vento
       const wind =
-        Math.sin(time * 0.2 + x * 0.6 + y * 0.2) * windStrength +
-        Math.cos(time * 0.2 + y * 0.6) * windStrength;
+        Math.sin(time * 0.4 + x * 0.6 + y * 0.4) * windStrength +
+        Math.cos(time * 0.02 + y * 0.02) * windStrength;
 
       const windedZ = z + wind + inflate;
 
@@ -128,7 +150,7 @@ const AboutImage = ({ wrapperRef }: AboutImageProps) => {
   });
 
   return (
-    <mesh ref={meshRef} position={[0, 0, 0]} receiveShadow castShadow>
+    <mesh ref={meshRef} position={[0, 0, 0]}>
       <planeGeometry args={[cardWidth, cardHeight, 32, 40]} />
       <meshStandardMaterial map={image} side={THREE.DoubleSide} />
     </mesh>

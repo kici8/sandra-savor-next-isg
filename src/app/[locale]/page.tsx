@@ -1,11 +1,10 @@
 import { fetchData } from "@/graphql/fetchData";
 import { graphql } from "@/graphql/generated/gql";
 import { WorksForHomeQuery } from "@/graphql/generated/graphql";
-import HomeScene from "./homeComponent/HomeScene";
-import { setRequestLocale } from "next-intl/server";
-import { hasLocale } from "next-intl";
 import { routing } from "@/i18n/routing";
-import { notFound } from "next/navigation";
+import { hasLocale } from "next-intl";
+import { setRequestLocale } from "next-intl/server";
+import HomeScene from "./homeComponent/HomeScene";
 
 const worksForHome = graphql(/* GraphQL */ `
   query worksForHome($locale: I18NLocaleCode) {
@@ -40,7 +39,10 @@ export default async function Home({
 }) {
   const { locale } = await params;
   if (!hasLocale(routing.locales, locale)) {
-    notFound();
+    return (
+      <div className="text-center text-red-500">Locale not found: {locale}</div>
+    );
+    // notFound();
   }
   setRequestLocale(locale);
 

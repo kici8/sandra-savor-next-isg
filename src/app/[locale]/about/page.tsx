@@ -3,6 +3,7 @@ import { hasLocale } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import AboutScene from "./AboutScene";
+import { Suspense, useRef } from "react";
 
 // TODO: no need to use async if no data fetching is needed
 // TODO: Or move these texts to the strapi backOffice

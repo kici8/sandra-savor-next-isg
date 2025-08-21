@@ -50,6 +50,12 @@ export default async function Work({
     locale,
   });
 
+  if (!locale) {
+    return (
+      <div className="text-center text-red-500">Locale not found: {locale}</div>
+    );
+  }
+
   // TODO:
   // Handle errors or loading states
   // If no works are found??
