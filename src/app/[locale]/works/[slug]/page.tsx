@@ -34,7 +34,11 @@ export default async function Page({
   // Data fetching
   const { slug, locale } = await params;
   if (!hasLocale(routing.locales, locale)) {
-    notFound();
+    // TODO: remove and handle not found in a better way
+    // notFound();
+    return (
+      <div className="text-center text-red-500">Locale not found: {locale}</div>
+    );
   }
   setRequestLocale(locale);
 
@@ -47,7 +51,13 @@ export default async function Page({
 
   // 404 if no work found
   if (!data || !data.works || data.works?.data.length === 0) {
-    notFound();
+    // TODO: remove and handle not found in a better way
+    // notFound();
+    return (
+      <div className="text-center text-red-500">
+        Work not found for slug: {slug}
+      </div>
+    );
   }
 
   // Data extraction
