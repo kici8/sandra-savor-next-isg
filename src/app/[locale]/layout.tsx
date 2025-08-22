@@ -7,6 +7,7 @@ import { hasLocale, Locale, NextIntlClientProvider } from "next-intl";
 import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import Sipario from "@/components/Sipario";
 
 // TODO: add license for the fonts
 // Font display
@@ -100,12 +101,12 @@ export default async function RootLayout({
   return (
     <html lang={locale}>
       <body
-        className={`${aujournuit.variable} ${ronzino.variable} flex min-h-svh flex-col bg-light-bg font-ronzino text-light-color dark:bg-black dark:text-orange-50`}
+        className={`${aujournuit.variable} ${ronzino.variable} min-h-full bg-light-bg font-ronzino text-light-color dark:bg-black dark:text-orange-50`}
       >
         <NextIntlClientProvider>
-          <header className="relative z-30 mx-auto flex min-h-12 w-full max-w-container2560 shrink-0 items-center px-4 py-2">
+          <header className="fixed z-30 mx-auto flex min-h-12 w-full max-w-container2560 shrink-0 items-center bg-green-400 px-4 py-2 opacity-60">
             <nav className="isolate flex flex-1 text-sm font-medium mix-blend-difference">
-              <ul className="relative flex flex-grow items-center gap-4">
+              <ul className="flex flex-grow items-center gap-4">
                 <li className="mr-auto flex items-center gap-4">
                   <Link
                     href={`/${locale}`}
@@ -124,8 +125,12 @@ export default async function RootLayout({
               </ul>
             </nav>
           </header>
-          <div className="flex-1 shrink-0">{children}</div>
-          <footer className="relative flex min-h-12 w-full max-w-container2560 shrink-0 flex-col items-center justify-center px-4 py-2 lg:flex-row lg:justify-between">
+          <div className="absolute left-0 top-0 h-full w-full overflow-hidden">
+            <Sipario />
+          </div>
+          <div className="relative z-10 min-h-dvh">{children}</div>
+          {/* FOOTER */}
+          <footer className="fixed bottom-0 z-30 flex min-h-12 w-full max-w-container2560 shrink-0 flex-col items-center justify-center bg-purple-400 px-4 py-2 opacity-60 lg:flex-row lg:justify-between">
             <Link
               href={`/${locale}`}
               className="mb-2 flex items-center lg:mb-0"
