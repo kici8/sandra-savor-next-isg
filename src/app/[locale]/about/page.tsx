@@ -1,6 +1,6 @@
 import { routing } from "@/i18n/routing";
 import { Metadata } from "next";
-import { hasLocale } from "next-intl";
+import { hasLocale, Locale } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import AboutScene from "./AboutScene";
@@ -11,9 +11,9 @@ import AboutScene from "./AboutScene";
 export async function generateMetadata({
   params,
 }: {
-  params: { locale: "en" | "it" };
+  params: Promise<{ locale: Locale }>;
 }): Promise<Metadata> {
-  const { locale } = params;
+  const { locale } = await params;
 
   const t = await getTranslations({ locale, namespace: "about.metadata" });
 
@@ -32,7 +32,7 @@ export async function generateMetadata({
 export default async function Page({
   params,
 }: {
-  params: Promise<{ locale: string }>;
+  params: Promise<{ locale: Locale }>;
 }) {
   const { locale } = await params;
   if (!hasLocale(routing.locales, locale)) {

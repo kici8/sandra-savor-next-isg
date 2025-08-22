@@ -1,7 +1,7 @@
 import { fetchData } from "@/graphql/fetchData";
 import { WorksForWorkQuery } from "@/graphql/generated/graphql";
 import { routing } from "@/i18n/routing";
-import { hasLocale } from "next-intl";
+import { hasLocale, Locale } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import Image from "next/image";
 import { worksForWork, worksForWorkStaticParams } from "./queries";
@@ -30,18 +30,18 @@ export async function generateStaticParams() {
 export async function generateMetadata({
   params,
 }: {
-  params: { slug: string; locale: string };
+  params: Promise<{ slug: string; locale: Locale }>;
 }): Promise<Metadata> {
-  const { slug, locale } = params;
+  const { slug, locale } = await params;
 
   // Fetch the work data
   const data = await fetchData(worksForWork, {
     slug: slug,
     locale: locale,
   });
+  const t = await getTranslations("work.metadata");
 
   const work = data?.works?.data?.[0];
-  const t = await getTranslations("work.metadata");
 
   return {
     title: t("title", { title: work?.attributes?.title || t("untitledWork") }),

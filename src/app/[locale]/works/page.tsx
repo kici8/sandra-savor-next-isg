@@ -3,7 +3,7 @@ import { graphql } from "@/graphql/generated/gql";
 import { WorksForWorksQuery } from "@/graphql/generated/graphql";
 import { routing } from "@/i18n/routing";
 import { Metadata } from "next";
-import { hasLocale } from "next-intl";
+import { hasLocale, Locale } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import Image from "next/image";
 import Link from "next/link";
@@ -38,9 +38,9 @@ const worksForWorks = graphql(/* GraphQL */ `
 export async function generateMetadata({
   params,
 }: {
-  params: { locale: "en" | "it" };
+  params: Promise<{ locale: Locale }>;
 }): Promise<Metadata> {
-  const { locale } = params;
+  const { locale } = await params;
 
   const t = await getTranslations({ locale, namespace: "works.metadata" });
 
