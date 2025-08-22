@@ -2,8 +2,9 @@ import { fetchData } from "@/graphql/fetchData";
 import { graphql } from "@/graphql/generated/gql";
 import { WorksForWorksQuery } from "@/graphql/generated/graphql";
 import { routing } from "@/i18n/routing";
+import { Metadata } from "next";
 import { hasLocale } from "next-intl";
-import { setRequestLocale } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -33,6 +34,27 @@ const worksForWorks = graphql(/* GraphQL */ `
     }
   }
 `);
+
+export async function generateMetadata({
+  params,
+}: {
+  params: { locale: "en" | "it" };
+}): Promise<Metadata> {
+  const { locale } = params;
+
+  const t = await getTranslations({ locale, namespace: "works.metadata" });
+
+  return {
+    title: t("title"),
+    description: t("description"),
+    keywords: t("keywords"),
+    openGraph: {
+      title: t("title"),
+      description: t("description"),
+      // TODO: add images and...
+    },
+  };
+}
 
 export default async function Work({
   params,

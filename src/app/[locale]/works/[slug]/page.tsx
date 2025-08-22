@@ -1,13 +1,11 @@
 import { fetchData } from "@/graphql/fetchData";
-import {
-  WorksForWorkQuery,
-  WorksForWorkStaticParamsQuery,
-} from "@/graphql/generated/graphql";
+import { WorksForWorkQuery } from "@/graphql/generated/graphql";
 import { routing } from "@/i18n/routing";
 import { hasLocale } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import Image from "next/image";
 import { worksForWork, worksForWorkStaticParams } from "./queries";
+import { Metadata } from "next";
 
 // Genera tutti i parametri statici per ogni locale e ogni work
 export async function generateStaticParams() {
@@ -27,6 +25,43 @@ export async function generateStaticParams() {
   );
 
   return allParams;
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: { slug: string; locale: string };
+}): Promise<Metadata> {
+  const { slug, locale } = params;
+
+  // Fetch the work data
+  const data = await fetchData(worksForWork, {
+    slug: slug,
+    locale: locale,
+  });
+
+  const work = data?.works?.data?.[0];
+  const t = await getTranslations("work.metadata");
+
+  return {
+    title: t("title", { title: work?.attributes?.title || t("untitledWork") }),
+    description: work?.attributes?.description || t("description"),
+    keywords: t("keywords"),
+    openGraph: {
+      title: t("title", {
+        title: work?.attributes?.title || t("untitledWork"),
+      }),
+      description: work?.attributes?.description || t("description"),
+      authors: ["Sandra Savorgnani"],
+      images:
+        work?.attributes?.images?.data
+          ?.filter((img) => !!img.attributes?.url)
+          .map((img) => ({
+            url: img.attributes!.url as string,
+            alt: img.attributes?.alternativeText || "",
+          })) || [],
+    },
+  };
 }
 
 // Page component
