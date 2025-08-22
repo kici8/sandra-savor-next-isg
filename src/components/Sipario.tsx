@@ -3,6 +3,9 @@
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { RefObject, Suspense, useEffect, useRef } from "react";
 import * as THREE from "three";
+import { usePathname } from "next/navigation";
+import gsap from "gsap";
+import { useGSAP } from "@gsap/react";
 
 type SiparioProps = {};
 
@@ -29,8 +32,10 @@ type SiparioImageProps = {
 };
 
 const SiparioImage = ({ wrapperRef }: SiparioImageProps) => {
-  const meshRef = useRef<THREE.Mesh>(null);
+  const meshRef = useRef<THREE.Mesh>(null!);
   const mouseRef = useRef({ x: 0, y: 0 });
+  const pathname = usePathname();
+  const timelineRef = useRef<gsap.core.Timeline | null>(null);
 
   const { camera } = useThree();
 
@@ -50,28 +55,75 @@ const SiparioImage = ({ wrapperRef }: SiparioImageProps) => {
 
   const originalPositions = useRef<Float32Array | null>(null);
 
+  // Mouse tracking
   useEffect(() => {
+    // Mouse tracking
     function handleMouseMove(e: MouseEvent) {
       mouseRef.current.x = e.clientX;
       mouseRef.current.y = e.clientY;
     }
     window.addEventListener("mousemove", handleMouseMove);
-    return () => window.removeEventListener("mousemove", handleMouseMove);
+
+    // Timeline setup
+    timelineRef.current = gsap.timeline();
+
+    // Cleanup
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      timelineRef.current?.kill();
+    };
   }, []);
 
+  // Animation functions
+  const animateToWorks = () => {
+    timelineRef.current?.clear();
+    timelineRef.current?.to(meshRef.current?.rotation, {
+      x: 0,
+      y: 0,
+      z: Math.PI / 6,
+      duration: 0.8,
+      ease: "power2.out",
+    });
+  };
+
+  const animateToAbout = () => {
+    timelineRef.current?.clear();
+    timelineRef.current?.to(meshRef.current?.rotation, {
+      x: 0,
+      y: Math.PI / 8,
+      z: 0,
+      duration: 0.8,
+      ease: "power2.out",
+    });
+  };
+
+  const animateToHome = () => {
+    timelineRef.current?.clear();
+    timelineRef.current?.to(meshRef.current?.rotation, {
+      x: 0,
+      y: 0,
+      z: 0,
+      duration: 0.8,
+      ease: "power2.out",
+    });
+  };
+
+  // Pathname change effect
+  useGSAP(
+    () => {
+      if (!meshRef.current) return;
+      if (pathname.includes("/works")) {
+        animateToWorks();
+      } else if (pathname.includes("/about")) {
+        animateToAbout();
+      } else if (pathname === "/it" || pathname === "/en") {
+        animateToHome();
+      }
+    },
+    { dependencies: [pathname] },
+  );
+
   useFrame(() => {
-    // Center of the page
-    let canvasCenterX = window.innerWidth / 2;
-    let canvasCenterY = window.innerHeight / 2;
-
-    if (wrapperRef.current) {
-      const rect = wrapperRef.current.getBoundingClientRect();
-      canvasCenterX = rect.left + rect.width / 2;
-      canvasCenterY = rect.top + rect.height / 2;
-    }
-
-    const rect = wrapperRef.current?.getBoundingClientRect();
-
     if (!meshRef.current) return;
     const posAttr = meshRef.current.geometry.attributes.position;
     const meshPositionArray = posAttr.array;
@@ -81,8 +133,6 @@ const SiparioImage = ({ wrapperRef }: SiparioImageProps) => {
       originalPositions.current = Float32Array.from(meshPositionArray);
     }
     const orig = originalPositions.current;
-
-    // Animazione vento
     const time = performance.now() * 0.004;
     const windStrength = 0.3;
 
@@ -91,32 +141,12 @@ const SiparioImage = ({ wrapperRef }: SiparioImageProps) => {
       const y = orig[i + 1];
       const z = orig[i + 2];
 
-      // Mappa la posizione del mouse nelle coordinate della card
-      let mouseCardX = 0;
-      let mouseCardY = 0;
-      if (rect) {
-        mouseCardX =
-          ((mouseRef.current.x - rect.left) / rect.width - 0.5) * cardWidth;
-        mouseCardY =
-          ((mouseRef.current.y - rect.top) / rect.height - 0.5) * cardHeight;
-      }
-
-      // Calcola la distanza tra il vertice e il mouse (in coordinate card)
-      const dist = Math.sqrt((x - mouseCardX) ** 2 + (-y - mouseCardY) ** 2);
-
-      const maxInflate = 1.2;
-      const minInflate = 0.2;
-      const influenceRadius = cardWidth * 1.2;
-      const normalizedDist = Math.min(dist / influenceRadius, 1);
-      const inflate =
-        minInflate + (1 - normalizedDist) * (maxInflate - minInflate);
-
       // Effetto vento
       const wind =
         Math.sin(time * 0.4 + x * 0.6 + y * 0.4) * windStrength +
         Math.cos(time * 0.02 + y * 0.02) * windStrength;
 
-      const windedZ = z + wind + inflate;
+      const windedZ = z + wind;
 
       meshPositionArray[i] = x;
       meshPositionArray[i + 1] = y;

@@ -3,7 +3,6 @@ import { Metadata } from "next";
 import { hasLocale, Locale } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
-import AboutScene from "./AboutScene";
 
 // TODO: no need to use async if no data fetching is needed
 // TODO: Or move these texts to the strapi backOffice
@@ -49,9 +48,6 @@ export default async function Page({
             className="pointer-events-none relative z-10 text-center font-aujournuit text-7xl leading-[0.8]"
             dangerouslySetInnerHTML={{ __html: t("title") }}
           />
-          <div className="absolute top-0 h-full w-full">
-            <AboutScene />
-          </div>
         </div>
 
         <p

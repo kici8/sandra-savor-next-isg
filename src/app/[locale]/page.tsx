@@ -58,7 +58,7 @@ export default async function Home({
 
   return (
     <main className="absolute left-0 top-0 h-dvh w-full">
-      <HomeScene works={data.works} />
+      {/* <HomeScene works={data.works} /> */}
     </main>
   );
 }

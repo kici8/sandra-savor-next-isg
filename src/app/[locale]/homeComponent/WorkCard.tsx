@@ -254,66 +254,6 @@ export const WorkCard: React.FC<CardProps> = ({
 
   const [image] = useLoader(THREE.TextureLoader, [work.coverUrl]);
 
-  // Start animation
-  useEffect(() => {
-    let frame: number;
-    let start: number | null = null;
-    const duration = 1600; // ms
-
-    const startIndex = 0;
-    const minCardsToAnimate = totalNumberOfCards >= 6 ? 5 : totalNumberOfCards;
-    const maxFinalIndex = Math.min(
-      startIndex + minCardsToAnimate - 1,
-      totalNumberOfCards - 1,
-    );
-
-    const initialTarget = cardHeightWithGap * startIndex;
-    const finalTarget = cardHeightWithGap * maxFinalIndex;
-
-    // Per animazione Z e scala
-    const initialZ = -0.2;
-    const finalZ = 0.6;
-    const initialScale = 0.8;
-    const finalScale = 1;
-
-    scrollData.current.current = initialTarget;
-    scrollData.current.target = initialTarget;
-
-    function animateFakeScroll(ts: number) {
-      if (start === null) start = ts;
-      const elapsed = ts - start;
-      const progress = Math.min(elapsed / duration, 1);
-      const eased = 1 - Math.pow(1 - progress, 2);
-
-      // Animate scroll
-      scrollData.current.target =
-        initialTarget + (finalTarget - initialTarget) * eased;
-
-      if (cardMeshRef.current) {
-        // Animate Z
-        cardMeshRef.current.position.z = initialZ + (finalZ - initialZ) * eased;
-        // Animate scale
-        const s = initialScale + (finalScale - initialScale) * eased;
-        cardMeshRef.current.scale.set(s, s, s);
-      }
-
-      if (progress < 1) {
-        frame = requestAnimationFrame(animateFakeScroll);
-      } else {
-        scrollData.current.target = finalTarget;
-        if (cardMeshRef.current) {
-          cardMeshRef.current.position.z = finalZ;
-        }
-        if (cardMeshRef.current) {
-          cardMeshRef.current.scale.set(finalScale, finalScale, finalScale);
-        }
-      }
-    }
-
-    frame = requestAnimationFrame(animateFakeScroll);
-    return () => cancelAnimationFrame(frame);
-  }, [cardHeightWithGap, totalNumberOfCards]);
-
   return (
     <group ref={cardGroupRef}>
       <mesh
