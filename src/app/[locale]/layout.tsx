@@ -8,6 +8,7 @@ import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import Sipario from "@/components/Sipario";
+import Preloader from "@/components/preloader";
 
 // TODO: add license for the fonts
 // Font display
@@ -127,6 +128,9 @@ export default async function RootLayout({
           </header>
           <div className="absolute left-0 top-0 h-full w-full overflow-hidden">
             <Sipario />
+          </div>
+          <div className="pointer-events-none absolute left-0 top-0 z-40 h-full w-full overflow-hidden">
+            <Preloader />
           </div>
           <div className="relative z-10 min-h-dvh">{children}</div>
           {/* FOOTER */}
