@@ -1,11 +1,15 @@
 "use client";
 
+import { useGSAP } from "@gsap/react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import gsap from "gsap";
+import { usePathname } from "next/navigation";
 import { RefObject, Suspense, useEffect, useRef } from "react";
 import * as THREE from "three";
-import { usePathname } from "next/navigation";
-import gsap from "gsap";
-import { useGSAP } from "@gsap/react";
+import { MeshEffectContext } from "./EffectsManager";
+import { inflateOnMouseEffect } from "./inflateOnMouseEffect";
+import { windEffect } from "./windEffect";
+import { useSiparioEffects } from "./EffectsProvider";
 
 type SiparioProps = {};
 
@@ -36,6 +40,7 @@ const SiparioImage = ({ wrapperRef }: SiparioImageProps) => {
   const mouseRef = useRef({ x: 0, y: 0 });
   const pathname = usePathname();
   const timelineRef = useRef<gsap.core.Timeline | null>(null);
+  const effectsManager = useSiparioEffects();
 
   const { camera } = useThree();
 
@@ -67,12 +72,24 @@ const SiparioImage = ({ wrapperRef }: SiparioImageProps) => {
     // Timeline setup
     timelineRef.current = gsap.timeline();
 
+    // Add initial effects
+    effectsManager.addEffect({
+      name: "wind",
+      effect: windEffect(0.6),
+      strength: 1,
+    });
+    effectsManager.addEffect({
+      name: "inflate",
+      effect: inflateOnMouseEffect(0.1, 1, 0.6),
+      strength: 1,
+    });
+
     // Cleanup
     return () => {
       window.removeEventListener("mousemove", handleMouseMove);
       timelineRef.current?.kill();
     };
-  }, []);
+  }, [effectsManager]);
 
   // Animation functions
   const animateToWorks = () => {
@@ -123,34 +140,42 @@ const SiparioImage = ({ wrapperRef }: SiparioImageProps) => {
     { dependencies: [pathname] },
   );
 
-  useFrame(() => {
+  useFrame((state) => {
     if (!meshRef.current) return;
     const posAttr = meshRef.current.geometry.attributes.position;
     const meshPositionArray = posAttr.array;
 
-    // Salva le posizioni originali solo una volta
     if (!originalPositions.current) {
       originalPositions.current = Float32Array.from(meshPositionArray);
     }
     const orig = originalPositions.current;
-    const time = performance.now() * 0.004;
-    const windStrength = 0.3;
+
+    const ctx: MeshEffectContext = {
+      time: state.clock.elapsedTime,
+      cardWidth,
+      cardHeight,
+      mouse: mouseRef.current,
+      rect: wrapperRef.current?.getBoundingClientRect(),
+    };
 
     for (let i = 0; i < meshPositionArray.length; i += 3) {
-      const x = orig[i];
-      const y = orig[i + 1];
-      const z = orig[i + 2];
+      let x = orig[i];
+      let y = orig[i + 1];
+      let z = orig[i + 2];
 
-      // Effetto vento
-      const wind =
-        Math.sin(time * 0.4 + x * 0.6 + y * 0.4) * windStrength +
-        Math.cos(time * 0.02 + y * 0.02) * windStrength;
-
-      const windedZ = z + wind;
+      [x, y, z] = effectsManager.applyEffects({
+        bufferIndex: i,
+        context: ctx,
+        orig,
+        strength: 1,
+        x,
+        y,
+        z,
+      });
 
       meshPositionArray[i] = x;
       meshPositionArray[i + 1] = y;
-      meshPositionArray[i + 2] = windedZ;
+      meshPositionArray[i + 2] = z;
     }
 
     posAttr.needsUpdate = true;

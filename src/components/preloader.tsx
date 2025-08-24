@@ -9,6 +9,9 @@ type PreloaderProps = {};
 const Preloader: React.FC<PreloaderProps> = ({}) => {
   const wrapperRef = useRef<HTMLDivElement>(null);
 
+  // TODO: prefetch images and pages
+  // TODO: animation on page load
+
   useGSAP(() => {
     gsap.fromTo(
       wrapperRef.current,
@@ -24,7 +27,7 @@ const Preloader: React.FC<PreloaderProps> = ({}) => {
 
   return (
     <div
-      className="pointer-events-none h-full w-full touch-none"
+      className="pointer-events-none h-full w-full touch-none bg-[#ff00ff]"
       ref={wrapperRef}
     ></div>
   );
