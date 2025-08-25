@@ -10,6 +10,8 @@ import { MeshEffectContext } from "./EffectsManager";
 import { inflateOnMouseEffect } from "./inflateOnMouseEffect";
 import { windEffect } from "./windEffect";
 import { useSiparioEffects } from "./EffectsProvider";
+import { curlEffect } from "./curlEffect";
+import { CameraControls } from "@react-three/drei";
 
 type SiparioProps = {};
 
@@ -17,9 +19,10 @@ const Sipario: React.FC<SiparioProps> = ({}) => {
   const wrapperRef = useRef<HTMLDivElement>(null);
 
   return (
-    <div className="h-full w-full touch-none" ref={wrapperRef}>
+    <div className="h-full w-full" ref={wrapperRef}>
       <Suspense fallback={null}>
         <Canvas camera={{ isPerspectiveCamera: true, position: [0, 0, 10] }}>
+          {/* <CameraControls /> */}
           <ambientLight intensity={1.6} />
           <directionalLight position={[2, 4, 32]} intensity={2.6} />
           <SiparioImage wrapperRef={wrapperRef} />
@@ -38,13 +41,14 @@ type SiparioImageProps = {
 const SiparioImage = ({ wrapperRef }: SiparioImageProps) => {
   const meshRef = useRef<THREE.Mesh>(null!);
   const mouseRef = useRef({ x: 0, y: 0 });
-  const pathname = usePathname();
+
   const timelineRef = useRef<gsap.core.Timeline | null>(null);
+  const pathname = usePathname();
   const effectsManager = useSiparioEffects();
 
-  const { camera } = useThree();
-
   // Calcolo dimensioni card
+
+  const { camera } = useThree();
   let cardHeight = 1;
   if ("fov" in camera) {
     const vFov = (camera.fov * Math.PI) / 180;
@@ -76,12 +80,17 @@ const SiparioImage = ({ wrapperRef }: SiparioImageProps) => {
     effectsManager.addEffect({
       name: "wind",
       effect: windEffect(0.6),
-      strength: 1,
+      strength: 0,
     });
     effectsManager.addEffect({
       name: "inflate",
       effect: inflateOnMouseEffect(0.1, 1, 0.6),
-      strength: 1,
+      strength: 0,
+    });
+    effectsManager.addEffect({
+      name: "curve",
+      effect: curlEffect(60),
+      strength: 0,
     });
 
     // Cleanup
@@ -140,6 +149,17 @@ const SiparioImage = ({ wrapperRef }: SiparioImageProps) => {
     { dependencies: [pathname] },
   );
 
+  // TODO: check if ok to simply declare the timeline inside a callback
+  const handleTestTimelineOnClick = () => {
+    console.log("click");
+    effectsManager.updateEffect({
+      name: "curve",
+      strength: Math.random(),
+      duration: 0.6,
+      ease: "cubic-bezier(0.2,0.75,0.8,0.15);",
+    });
+  };
+
   useFrame((state) => {
     if (!meshRef.current) return;
     const posAttr = meshRef.current.geometry.attributes.position;
@@ -182,8 +202,12 @@ const SiparioImage = ({ wrapperRef }: SiparioImageProps) => {
   });
 
   return (
-    <mesh ref={meshRef} position={[0, 0, 0]}>
-      <planeGeometry args={[cardWidth, cardHeight, 32, 40]} />
+    <mesh
+      ref={meshRef}
+      position={[0, 0, 0]}
+      onClick={handleTestTimelineOnClick}
+    >
+      <planeGeometry args={[cardWidth, cardHeight, 64, 64]} />
       <meshStandardMaterial map={image} side={THREE.DoubleSide} />
     </mesh>
   );

@@ -2,7 +2,7 @@
 
 import { useFrame, useLoader } from "@react-three/fiber";
 import { useGesture } from "@use-gesture/react";
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 import * as THREE from "three";
 import { SimpleWork } from "./HomeScene";
 
@@ -17,14 +17,6 @@ type CardProps = {
   setActiveCard: (index: number) => void;
   handleClick: (index: number) => void;
 };
-
-// FIXME:
-// The start animation is not that good
-// There is a flash at the start when the cards are in position and then the animation start
-// the start animation block and is blocked by the scroll
-// // this is very annoying, especially when navigating back and forth
-// we need a transition or a leaving animation when clicking on a card
-// we need simplify this mess
 
 export const WorkCard: React.FC<CardProps> = ({
   work,
@@ -219,7 +211,7 @@ export const WorkCard: React.FC<CardProps> = ({
           const x = originalPositions.current[i];
           const y = originalPositions.current[i + 1];
           // const z = originalPositions.current[i + 2];
-          const angle = Math.PI / 4;
+          const angle = THREE.MathUtils.degToRad(45);
           const xr = x * Math.cos(angle) - y * Math.sin(angle);
           const yr = x * Math.sin(angle) + y * Math.cos(angle);
 
@@ -229,22 +221,12 @@ export const WorkCard: React.FC<CardProps> = ({
           const newXr = radius * Math.sin(theta);
           const newZ = -radius * (1.0 - Math.cos(theta));
 
-          // wind
-          const time = performance.now() * 0.001;
-          const windStrength = 0.02;
-          const wind =
-            Math.sin(time * 2 + x * 3 + y * 2) * windStrength +
-            Math.cos(time * 1.5 + y * 2) * windStrength * 0.5;
-          const windX = wind * 0.2;
-          const windY = wind * 0.2;
-          const windedZ = newZ + wind;
-
           // Update all
-          const newX = newXr * Math.cos(-angle) - yr * Math.sin(-angle) + windX;
-          const newY = newXr * Math.sin(-angle) + yr * Math.cos(-angle) + windY;
+          const newX = newXr * Math.cos(-angle) - yr * Math.sin(-angle);
+          const newY = newXr * Math.sin(-angle) + yr * Math.cos(-angle);
           meshPositionArray[i] = newX;
           meshPositionArray[i + 1] = newY;
-          meshPositionArray[i + 2] = windedZ;
+          meshPositionArray[i + 2] = newZ;
         }
         // Call the update
         cardMeshRef.current.geometry.attributes.position.needsUpdate = true;

@@ -36,10 +36,11 @@ type AddEffectProps = {
   strength?: number;
 };
 
-type ToggleEffectProps = {
+type UpdateEffectProps = {
   name: string;
-  on: boolean;
+  strength: number;
   duration?: number;
+  ease?: gsap.EaseString | gsap.EaseFunction;
 };
 
 export class SiparioEffectsManager {
@@ -49,13 +50,18 @@ export class SiparioEffectsManager {
     this.effects.push({ name, effect, strength });
   }
 
-  toggleEffect({ name, on, duration = 1 }: ToggleEffectProps) {
+  updateEffect({
+    name,
+    strength,
+    duration = 1,
+    ease = "power2.out",
+  }: UpdateEffectProps) {
     const target = this.effects.find((e) => e.name === name);
     if (!target) return;
     gsap.to(target, {
-      strength: on ? 1 : 0,
+      strength,
       duration,
-      ease: "power2.out",
+      ease,
     });
   }
 
