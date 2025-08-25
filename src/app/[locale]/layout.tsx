@@ -107,7 +107,7 @@ export default async function RootLayout({
       >
         <NextIntlClientProvider>
           <SiparioEffectsProvider>
-            <header className="fixed z-30 mx-auto flex min-h-12 w-full max-w-container2560 shrink-0 items-center bg-green-400 px-4 py-2 opacity-60">
+            <header className="fixed z-30 mx-auto flex min-h-12 w-full max-w-container2560 shrink-0 items-center border-b border-light-color px-4 py-2">
               <nav className="isolate flex flex-1 text-sm font-medium mix-blend-difference">
                 <ul className="flex flex-grow items-center gap-4">
                   <li className="mr-auto flex items-center gap-4">
@@ -134,9 +134,12 @@ export default async function RootLayout({
             <div className="pointer-events-none absolute left-0 top-0 z-40 h-full w-full overflow-hidden">
               <Preloader />
             </div>
-            <div className="relative z-10 min-h-dvh">{children}</div>
+            {/* FIXME: remove pointer-events-none after testing */}
+            <div className="pointer-events-none relative z-10 min-h-dvh">
+              {children}
+            </div>
             {/* FOOTER */}
-            <footer className="fixed bottom-0 z-30 flex min-h-12 w-full max-w-container2560 shrink-0 flex-col items-center justify-center bg-purple-400 px-4 py-2 opacity-60 lg:flex-row lg:justify-between">
+            <footer className="fixed bottom-0 z-30 flex min-h-12 w-full max-w-container2560 shrink-0 flex-col items-center justify-center border-t border-light-color px-4 py-2 lg:flex-row lg:justify-between">
               <Link
                 href={`/${locale}`}
                 className="mb-2 flex items-center lg:mb-0"

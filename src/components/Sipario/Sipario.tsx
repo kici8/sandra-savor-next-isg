@@ -10,6 +10,7 @@ import { MeshEffectContext } from "./EffectsManager";
 import { inflateOnMouseEffect } from "./inflateOnMouseEffect";
 import { windEffect } from "./windEffect";
 import { useSiparioEffects } from "./EffectsProvider";
+import { curlEffect } from "./curlEffect";
 
 type SiparioProps = {};
 
@@ -17,7 +18,7 @@ const Sipario: React.FC<SiparioProps> = ({}) => {
   const wrapperRef = useRef<HTMLDivElement>(null);
 
   return (
-    <div className="h-full w-full touch-none" ref={wrapperRef}>
+    <div className="h-full w-full" ref={wrapperRef}>
       <Suspense fallback={null}>
         <Canvas camera={{ isPerspectiveCamera: true, position: [0, 0, 10] }}>
           <ambientLight intensity={1.6} />
@@ -38,8 +39,16 @@ type SiparioImageProps = {
 const SiparioImage = ({ wrapperRef }: SiparioImageProps) => {
   const meshRef = useRef<THREE.Mesh>(null!);
   const mouseRef = useRef({ x: 0, y: 0 });
-  const pathname = usePathname();
+
   const timelineRef = useRef<gsap.core.Timeline | null>(null);
+
+  // Curl effect parameters
+  const startRef = useRef(0.6);
+  const radiusRef = useRef(0.2);
+  const deformationStrengthRef = useRef(0.8);
+  const isFlippedRef = useRef(false);
+
+  const pathname = usePathname();
   const effectsManager = useSiparioEffects();
 
   const { camera } = useThree();
@@ -81,6 +90,16 @@ const SiparioImage = ({ wrapperRef }: SiparioImageProps) => {
     effectsManager.addEffect({
       name: "inflate",
       effect: inflateOnMouseEffect(0.1, 1, 0.6),
+      strength: 1,
+    });
+    effectsManager.addEffect({
+      name: "curve",
+      effect: curlEffect({
+        startRef: startRef,
+        radiusRef: radiusRef,
+        deformationStrengthRef: deformationStrengthRef,
+        isFlippedRef: isFlippedRef,
+      }),
       strength: 1,
     });
 
@@ -140,6 +159,16 @@ const SiparioImage = ({ wrapperRef }: SiparioImageProps) => {
     { dependencies: [pathname] },
   );
 
+  // TODO: check if ok to simply declare the timeline inside a callback
+  const handleTestTimelineOnClick = () => {
+    console.log("click");
+    gsap.to(deformationStrengthRef, {
+      current: 6,
+      duration: 1.2,
+      ease: "power2.inOut",
+    });
+  };
+
   useFrame((state) => {
     if (!meshRef.current) return;
     const posAttr = meshRef.current.geometry.attributes.position;
@@ -182,7 +211,11 @@ const SiparioImage = ({ wrapperRef }: SiparioImageProps) => {
   });
 
   return (
-    <mesh ref={meshRef} position={[0, 0, 0]}>
+    <mesh
+      ref={meshRef}
+      position={[0, 0, -50]}
+      onClick={handleTestTimelineOnClick}
+    >
       <planeGeometry args={[cardWidth, cardHeight, 32, 40]} />
       <meshStandardMaterial map={image} side={THREE.DoubleSide} />
     </mesh>
