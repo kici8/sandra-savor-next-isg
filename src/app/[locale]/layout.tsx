@@ -10,6 +10,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import "../globals.css";
 import { SiparioEffectsProvider } from "@/components/Sipario/EffectsProvider";
+import { graphql } from "@/graphql/generated/gql";
+import { fetchData } from "@/graphql/fetchData";
 
 // TODO: add license for the fonts
 // Font display
@@ -58,6 +60,31 @@ const ronzino = localFont({
   display: "swap",
 });
 
+const worksForSiparioImages = graphql(/* GraphQL */ `
+  query worksForSiparioImages($locale: I18NLocaleCode) {
+    works(locale: $locale) {
+      data {
+        id
+        attributes {
+          slug
+          title
+          images {
+            data {
+              id
+              attributes {
+                url
+                previewUrl
+                alternativeText
+                formats
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+`);
+
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
 }
@@ -97,6 +124,10 @@ export default async function RootLayout({
   setRequestLocale(locale);
   const t = await getTranslations("layout");
 
+  // Fetch works for sipario images
+  const data = await fetchData(worksForSiparioImages, { locale });
+
+  // TODO: if the fetch is on server side, I need to sync the preloader with the fetch or not?
   // Preloader
   // https://stackoverflow.com/questions/54158994/react-suspense-lazy-delay
 
@@ -129,7 +160,7 @@ export default async function RootLayout({
               </nav>
             </header>
             <div className="absolute left-0 top-0 h-full w-full overflow-hidden">
-              <Sipario />
+              <Sipario works={data.works} />
             </div>
             <div className="pointer-events-none absolute left-0 top-0 z-40 h-full w-full overflow-hidden">
               <Preloader />

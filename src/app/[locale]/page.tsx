@@ -14,7 +14,6 @@ const worksForHome = graphql(/* GraphQL */ `
         attributes {
           slug
           title
-          description
           images {
             data {
               id

@@ -87,7 +87,7 @@ export default async function Work({
 
   return (
     <div className="mx-auto grid max-w-container2560 grid-cols-4 gap-4 px-4 lg:grid-cols-12">
-      {data.works.data.map((work) => {
+      {/* {data.works.data.map((work) => {
         const image = work.attributes?.images.data[0]?.attributes;
         if (!image || !work.attributes?.slug) return null;
         return (
@@ -106,7 +106,7 @@ export default async function Work({
             />
           </Link>
         );
-      })}
+      })} */}
     </div>
   );
 }

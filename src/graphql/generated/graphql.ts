@@ -1165,12 +1165,19 @@ export type WorkRelationResponseCollection = {
   data: Array<WorkEntity>;
 };
 
+export type WorksForSiparioImagesQueryVariables = Exact<{
+  locale?: InputMaybe<Scalars['I18NLocaleCode']['input']>;
+}>;
+
+
+export type WorksForSiparioImagesQuery = { __typename?: 'Query', works?: { __typename?: 'WorkEntityResponseCollection', data: Array<{ __typename?: 'WorkEntity', id?: string | null, attributes?: { __typename?: 'Work', slug?: string | null, title?: string | null, images: { __typename?: 'UploadFileRelationResponseCollection', data: Array<{ __typename?: 'UploadFileEntity', id?: string | null, attributes?: { __typename?: 'UploadFile', url: string, previewUrl?: string | null, alternativeText?: string | null, formats?: any | null } | null }> } } | null }> } | null };
+
 export type WorksForHomeQueryVariables = Exact<{
   locale?: InputMaybe<Scalars['I18NLocaleCode']['input']>;
 }>;
 
 
-export type WorksForHomeQuery = { __typename?: 'Query', works?: { __typename?: 'WorkEntityResponseCollection', data: Array<{ __typename?: 'WorkEntity', id?: string | null, attributes?: { __typename?: 'Work', slug?: string | null, title?: string | null, description: string, images: { __typename?: 'UploadFileRelationResponseCollection', data: Array<{ __typename?: 'UploadFileEntity', id?: string | null, attributes?: { __typename?: 'UploadFile', url: string, previewUrl?: string | null, alternativeText?: string | null, formats?: any | null } | null }> } } | null }> } | null };
+export type WorksForHomeQuery = { __typename?: 'Query', works?: { __typename?: 'WorkEntityResponseCollection', data: Array<{ __typename?: 'WorkEntity', id?: string | null, attributes?: { __typename?: 'Work', slug?: string | null, title?: string | null, images: { __typename?: 'UploadFileRelationResponseCollection', data: Array<{ __typename?: 'UploadFileEntity', id?: string | null, attributes?: { __typename?: 'UploadFile', url: string, previewUrl?: string | null, alternativeText?: string | null, formats?: any | null } | null }> } } | null }> } | null };
 
 export type WorksForWorkStaticParamsQueryVariables = Exact<{
   locale?: InputMaybe<Scalars['I18NLocaleCode']['input']>;
@@ -1209,6 +1216,30 @@ export class TypedDocumentString<TResult, TVariables>
   }
 }
 
+export const WorksForSiparioImagesDocument = new TypedDocumentString(`
+    query worksForSiparioImages($locale: I18NLocaleCode) {
+  works(locale: $locale) {
+    data {
+      id
+      attributes {
+        slug
+        title
+        images {
+          data {
+            id
+            attributes {
+              url
+              previewUrl
+              alternativeText
+              formats
+            }
+          }
+        }
+      }
+    }
+  }
+}
+    `) as unknown as TypedDocumentString<WorksForSiparioImagesQuery, WorksForSiparioImagesQueryVariables>;
 export const WorksForHomeDocument = new TypedDocumentString(`
     query worksForHome($locale: I18NLocaleCode) {
   works(locale: $locale) {
@@ -1217,7 +1248,6 @@ export const WorksForHomeDocument = new TypedDocumentString(`
       attributes {
         slug
         title
-        description
         images {
           data {
             id
