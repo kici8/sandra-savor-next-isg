@@ -9,6 +9,7 @@ import * as THREE from "three";
 import { MeshEffectContext } from "./EffectsManager";
 import { useSiparioEffects } from "./EffectsProvider";
 import { curlEffect } from "./curlEffect";
+import { DoubleSideImage } from "./doubleSideImage";
 import { inflateOnMouseEffect } from "./inflateOnMouseEffect";
 import { windEffect } from "./windEffect";
 
@@ -39,7 +40,8 @@ export const SiparioImage = ({ wrapperRef, imageUrl }: SiparioImageProps) => {
   const cardWidth = cardHeight * 0.75;
 
   // Carica la texture
-  const image = new THREE.TextureLoader().load(imageUrl);
+  // TODO: remove
+  // const image = new THREE.TextureLoader().load(imageUrl);
 
   const originalPositions = useRef<Float32Array | null>(null);
 
@@ -191,12 +193,14 @@ export const SiparioImage = ({ wrapperRef, imageUrl }: SiparioImageProps) => {
   });
 
   return (
-    <mesh ref={meshRef} onClick={handleTestTimelineOnClick}>
+    // eslint-disable-next-line jsx-a11y/alt-text
+    <DoubleSideImage
+      ref={meshRef}
+      onClick={handleTestTimelineOnClick}
+      imageUrl={imageUrl}
+      solidColor="#ffffff"
+    >
       <planeGeometry args={[cardWidth, cardHeight, 24, 24]} />
-      <meshStandardMaterial
-        //   map={image}
-        side={THREE.DoubleSide}
-      />
-    </mesh>
+    </DoubleSideImage>
   );
 };

@@ -160,7 +160,7 @@ export default async function RootLayout({
               </nav>
             </header>
             <div className="absolute left-0 top-0 h-full w-full overflow-hidden">
-              <Sipario works={data.works} />
+              {data && <Sipario works={data.works} />}
             </div>
             <div className="pointer-events-none absolute left-0 top-0 z-40 h-full w-full overflow-hidden">
               <Preloader />
