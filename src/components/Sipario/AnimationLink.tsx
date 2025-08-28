@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { usePathname } from "next/navigation";
 import { MeshRegistry, useSiparioEffects } from "./SiparioEffectsProvider";
 import gsap from "gsap";
+import { UpdateEffectProps } from "./useSiparioEffectsManager";
 
 type AnimationLinkProps = LinkProps & {
   children: React.ReactNode;
@@ -24,6 +25,7 @@ type TransitionFunction = ({
   router: ReturnType<typeof useRouter>;
   imagesIds: string[];
   meshRegistry: MeshRegistry;
+  updateEffect: ({ name, strength, duration, ease }: UpdateEffectProps) => void;
 }) => void;
 
 type RouteTransitionMap = {
@@ -37,6 +39,7 @@ const homeToAbout: TransitionFunction = ({
   imagesIds,
   router,
   meshRegistry,
+  updateEffect,
 }) => {
   console.log("Transition from home to about");
   const homeToAboutTimeline = gsap.timeline({});
@@ -44,35 +47,44 @@ const homeToAbout: TransitionFunction = ({
     "https://res.cloudinary.com/dxa1uyrml/image/upload/v1703958262/concerto_01_4121a9c0cd.jpg",
   );
   if (firstMeshRef?.current) {
-    homeToAboutTimeline.to(firstMeshRef.current.rotation, {
-      x: 0,
-      y: Math.PI,
-      z: 0,
-      duration: 1.5,
-      ease: "power2.inOut",
+    homeToAboutTimeline.add(() => {
+      updateEffect({
+        name: "curve",
+        strength: 0.8,
+        duration: 0.6,
+        ease: "cubic-bezier(0.2,0.75,0.8,0.15);",
+      });
     });
     homeToAboutTimeline.to(
-      firstMeshRef.current.position,
+      firstMeshRef.current.rotation,
       {
-        x: 0,
+        x: Math.PI,
         y: 0,
         z: 0,
-        duration: 1.5,
+        duration: 1.2,
         ease: "power2.inOut",
       },
-      "<",
+      "<", // parte insieme alla riduzione della curvatura
     );
-    homeToAboutTimeline.to(
-      firstMeshRef.current.scale,
-      {
-        x: 10,
-        y: 10,
-        z: 10,
-        duration: 1.5,
-        ease: "power2.inOut",
+    homeToAboutTimeline.to(firstMeshRef.current.scale, {
+      x: 5,
+      y: 5,
+      z: 5,
+      delay: 0,
+      duration: 0.6,
+      ease: "power2.inOut",
+      onComplete: () => {
+        router.push(href.toString());
       },
-      "<",
-    );
+    });
+    homeToAboutTimeline.add(() => {
+      updateEffect({
+        name: "curve",
+        strength: 0.0,
+        duration: 0.6,
+        ease: "cubic-bezier(0.2,0.75,0.8,0.15);",
+      });
+    }, "<");
   }
 };
 const defaultTransition = () => {};
@@ -160,7 +172,7 @@ export const AnimationLink = (props: AnimationLinkProps) => {
   const { href, children, ...rest } = props;
   const pathname = usePathname();
   const router = useRouter();
-  const { meshRegistry } = useSiparioEffects();
+  const { meshRegistry, updateEffect } = useSiparioEffects();
 
   const handleClick = (e: React.MouseEvent, href: Url) => {
     e.preventDefault();
@@ -174,6 +186,7 @@ export const AnimationLink = (props: AnimationLinkProps) => {
         router,
         imagesIds: [],
         meshRegistry,
+        updateEffect,
       });
     }
   };

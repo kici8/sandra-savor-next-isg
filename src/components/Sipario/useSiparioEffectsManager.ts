@@ -53,7 +53,7 @@ type AddEffectProps = {
   strength?: number;
 };
 
-type UpdateEffectProps = {
+export type UpdateEffectProps = {
   name: string;
   strength: number;
   duration?: number;

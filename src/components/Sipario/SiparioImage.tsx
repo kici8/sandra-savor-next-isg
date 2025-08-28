@@ -80,7 +80,7 @@ export const SiparioImage = ({ wrapperRef, imageUrl }: SiparioImageProps) => {
     });
     addEffect({
       name: "curve",
-      effect: curlEffect(60),
+      effect: curlEffect(90),
       strength: 0,
     });
 
@@ -157,12 +157,12 @@ export const SiparioImage = ({ wrapperRef, imageUrl }: SiparioImageProps) => {
   // TODO: check if ok to simply declare the timeline inside a callback
   // const handleTestTimelineOnClick = () => {
   //   console.log("click");
-  //   updateEffect({
-  //     name: "curve",
-  //     strength: Math.random(),
-  //     duration: 0.6,
-  //     ease: "cubic-bezier(0.2,0.75,0.8,0.15);",
-  //   });
+  // updateEffect({
+  //   name: "curve",
+  //   strength: Math.random(),
+  //   duration: 0.6,
+  //   ease: "cubic-bezier(0.2,0.75,0.8,0.15);",
+  // });
   // };
 
   useFrame((state) => {
@@ -212,7 +212,7 @@ export const SiparioImage = ({ wrapperRef, imageUrl }: SiparioImageProps) => {
       ref={meshRef}
       // onClick={handleTestTimelineOnClick}
       imageUrl={imageUrl}
-      solidColor="#ff00ff"
+      solidColor="#ffffff"
     >
       <planeGeometry args={[cardWidth, cardHeight, 24, 24]} />
     </DoubleSideImage>
