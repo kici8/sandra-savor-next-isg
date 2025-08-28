@@ -1,4 +1,4 @@
-import { MeshEffect } from "./EffectsManager";
+import { MeshEffect } from "./useSiparioEffectsManager";
 
 export const inflateOnMouseEffect = (
   minInflate: number,

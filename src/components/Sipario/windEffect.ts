@@ -1,4 +1,4 @@
-import { MeshEffect } from "./EffectsManager";
+import { MeshEffect } from "./useSiparioEffectsManager";
 
 export const windEffect = (baseStrength: number): MeshEffect => {
   return ({ bufferIndex, context, orig }) => {

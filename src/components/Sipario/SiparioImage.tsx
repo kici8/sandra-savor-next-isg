@@ -6,8 +6,8 @@ import gsap from "gsap";
 import { usePathname } from "next/navigation";
 import { RefObject, useEffect, useRef } from "react";
 import * as THREE from "three";
-import { MeshEffectContext } from "./EffectsManager";
-import { useSiparioEffects } from "./EffectsProvider";
+import { MeshEffectContext } from "./useSiparioEffectsManager";
+import { useSiparioEffects } from "./SiparioEffectsProvider";
 import { curlEffect } from "./curlEffect";
 import { DoubleSideImage } from "./doubleSideImage";
 import { inflateOnMouseEffect } from "./inflateOnMouseEffect";
@@ -19,12 +19,18 @@ type SiparioImageProps = {
 };
 
 export const SiparioImage = ({ wrapperRef, imageUrl }: SiparioImageProps) => {
-  const meshRef = useRef<THREE.Mesh>(null!);
   const mouseRef = useRef({ x: 0, y: 0 });
+  const meshRef = useRef<THREE.Mesh>(null!);
+  const pathname = usePathname();
 
   const timelineRef = useRef<gsap.core.Timeline | null>(null);
-  const pathname = usePathname();
-  const effectsManager = useSiparioEffects();
+  const {
+    addEffect,
+    applyEffects,
+    updateEffect,
+    registerMesh,
+    unregisterMesh,
+  } = useSiparioEffects();
 
   // Calcolo dimensioni card
 
@@ -47,6 +53,10 @@ export const SiparioImage = ({ wrapperRef, imageUrl }: SiparioImageProps) => {
 
   // Mouse tracking
   useEffect(() => {
+    if (meshRef.current) {
+      registerMesh(imageUrl, meshRef);
+    }
+
     // Mouse tracking
     function handleMouseMove(e: MouseEvent) {
       mouseRef.current.x = e.clientX;
@@ -58,17 +68,17 @@ export const SiparioImage = ({ wrapperRef, imageUrl }: SiparioImageProps) => {
     timelineRef.current = gsap.timeline();
 
     // Add initial effects
-    effectsManager.addEffect({
+    addEffect({
       name: "wind",
       effect: windEffect(0.6),
       strength: 0,
     });
-    effectsManager.addEffect({
+    addEffect({
       name: "inflate",
       effect: inflateOnMouseEffect(0.1, 1, 0.6),
       strength: 0,
     });
-    effectsManager.addEffect({
+    addEffect({
       name: "curve",
       effect: curlEffect(60),
       strength: 0,
@@ -76,44 +86,48 @@ export const SiparioImage = ({ wrapperRef, imageUrl }: SiparioImageProps) => {
 
     // Cleanup
     return () => {
+      unregisterMesh(imageUrl);
       window.removeEventListener("mousemove", handleMouseMove);
       timelineRef.current?.kill();
     };
-  }, [effectsManager]);
+  }, [addEffect, imageUrl, registerMesh, unregisterMesh]);
 
   // Animation functions
-  const animateToWorks = () => {
-    timelineRef.current?.clear();
-    timelineRef.current?.to(meshRef.current?.rotation, {
-      x: 0,
-      y: 0,
-      z: Math.PI / 6,
-      duration: 0.8,
-      ease: "power2.out",
-    });
-  };
+  // const animateToWorks = () => {
+  //   if (!meshRef.current) return;
+  //   timelineRef.current?.clear();
+  //   timelineRef.current?.to(meshRef.current?.rotation, {
+  //     x: 0,
+  //     y: 0,
+  //     z: Math.PI / 6,
+  //     duration: 0.8,
+  //     ease: "power2.out",
+  //   });
+  // };
 
-  const animateToAbout = () => {
-    timelineRef.current?.clear();
-    timelineRef.current?.to(meshRef.current?.rotation, {
-      x: 0,
-      y: Math.PI / 8,
-      z: 0,
-      duration: 0.8,
-      ease: "power2.out",
-    });
-  };
+  // const animateToAbout = () => {
+  //   if (!meshRef.current) return;
+  //   timelineRef.current?.clear();
+  //   timelineRef.current?.to(meshRef.current?.rotation, {
+  //     x: 0,
+  //     y: Math.PI / 8,
+  //     z: 0,
+  //     duration: 0.8,
+  //     ease: "power2.out",
+  //   });
+  // };
 
-  const animateToHome = () => {
-    timelineRef.current?.clear();
-    timelineRef.current?.to(meshRef.current?.rotation, {
-      x: 0,
-      y: 0,
-      z: 0,
-      duration: 0.8,
-      ease: "power2.out",
-    });
-  };
+  // const animateToHome = () => {
+  //   if (!meshRef.current) return;
+  //   timelineRef.current?.clear();
+  //   timelineRef.current?.to(meshRef.current?.rotation, {
+  //     x: 0,
+  //     y: 0,
+  //     z: 0,
+  //     duration: 0.8,
+  //     ease: "power2.out",
+  //   });
+  // };
 
   // PATHNAME EVENT
   // Pathname change effect
@@ -124,32 +138,32 @@ export const SiparioImage = ({ wrapperRef, imageUrl }: SiparioImageProps) => {
   // default animation (when coming from the same page or from outside the app)
   // an animation for every other page (when coming from another page of the app)
   // TODO: how to check for dynamic routes like /works/[slug]?
-  useGSAP(
-    () => {
-      if (!meshRef.current) return;
-      if (pathname.includes("/works")) {
-        animateToWorks();
-      } else if (pathname.includes("/about")) {
-        animateToAbout();
-      } else if (pathname === "/it" || pathname === "/en") {
-        animateToHome();
-      }
-    },
-    { dependencies: [pathname] },
-  );
+  // useGSAP(
+  //   () => {
+  //     if (!meshRef.current) return;
+  //     if (pathname.includes("/works")) {
+  //       animateToWorks();
+  //     } else if (pathname.includes("/about")) {
+  //       animateToAbout();
+  //     } else if (pathname === "/it" || pathname === "/en") {
+  //       animateToHome();
+  //     }
+  //   },
+  //   { dependencies: [pathname] },
+  // );
 
   // ONCLICK EVENT
   // OnClick event are used for animate before navigate to a new page
   // TODO: check if ok to simply declare the timeline inside a callback
-  const handleTestTimelineOnClick = () => {
-    console.log("click");
-    effectsManager.updateEffect({
-      name: "curve",
-      strength: Math.random(),
-      duration: 0.6,
-      ease: "cubic-bezier(0.2,0.75,0.8,0.15);",
-    });
-  };
+  // const handleTestTimelineOnClick = () => {
+  //   console.log("click");
+  //   updateEffect({
+  //     name: "curve",
+  //     strength: Math.random(),
+  //     duration: 0.6,
+  //     ease: "cubic-bezier(0.2,0.75,0.8,0.15);",
+  //   });
+  // };
 
   useFrame((state) => {
     if (!meshRef.current) return;
@@ -174,7 +188,7 @@ export const SiparioImage = ({ wrapperRef, imageUrl }: SiparioImageProps) => {
       let y = orig[i + 1];
       let z = orig[i + 2];
 
-      [x, y, z] = effectsManager.applyEffects({
+      [x, y, z] = applyEffects({
         bufferIndex: i,
         context: ctx,
         orig,
@@ -196,9 +210,9 @@ export const SiparioImage = ({ wrapperRef, imageUrl }: SiparioImageProps) => {
     // eslint-disable-next-line jsx-a11y/alt-text
     <DoubleSideImage
       ref={meshRef}
-      onClick={handleTestTimelineOnClick}
+      // onClick={handleTestTimelineOnClick}
       imageUrl={imageUrl}
-      solidColor="#ffffff"
+      solidColor="#ff00ff"
     >
       <planeGeometry args={[cardWidth, cardHeight, 24, 24]} />
     </DoubleSideImage>

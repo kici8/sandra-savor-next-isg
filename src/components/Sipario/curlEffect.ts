@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { MeshEffect } from "./EffectsManager";
+import { MeshEffect } from "./useSiparioEffectsManager";
 
 // axesAngleInDeg: the angle of the axis around which the curl happens, in degrees from 0 to 90
 export const curlEffect = (axesAngleInDeg: number): MeshEffect => {

@@ -9,9 +9,10 @@ import localFont from "next/font/local";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import "../globals.css";
-import { SiparioEffectsProvider } from "@/components/Sipario/EffectsProvider";
+import { SiparioEffectsProvider } from "@/components/Sipario/SiparioEffectsProvider";
 import { graphql } from "@/graphql/generated/gql";
 import { fetchData } from "@/graphql/fetchData";
+import { AnimationLink } from "@/components/Sipario/AnimationLink";
 
 // TODO: add license for the fonts
 // Font display
@@ -154,7 +155,9 @@ export default async function RootLayout({
                     <Link href={`/${locale}/works`}>{t("header.works")}</Link>
                   </li>
                   <li>
-                    <Link href={`/${locale}/about`}>{t("header.info")}</Link>
+                    <AnimationLink href={`/${locale}/about`}>
+                      {t("header.info")}
+                    </AnimationLink>
                   </li>
                 </ul>
               </nav>
