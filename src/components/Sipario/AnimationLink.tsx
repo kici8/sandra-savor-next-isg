@@ -1,19 +1,17 @@
 "use client";
 
-import { Url } from "next/dist/shared/lib/router/router";
-import Link, { LinkProps } from "next/link";
-import { useRouter } from "next/navigation";
-import { usePathname } from "next/navigation";
-import { useSiparioEffects } from "./SiparioEffectsProvider";
 import gsap from "gsap";
+import { Url } from "next/dist/shared/lib/router/router";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import { useSiparioEffects } from "./SiparioEffectsProvider";
 import {
   SiparioImageRegistry,
   UpdateEffectProps,
 } from "./useSiparioEffectsManager";
+import { usePageTransition } from "./TransitionContext";
 
-type AnimationLinkProps = LinkProps & {
-  children: React.ReactNode;
-};
+type AnimationLinkProps = React.ComponentPropsWithoutRef<typeof Link>;
 
 type Routes = "home" | "about" | "works" | "work";
 type RoutesWithExternal = Routes | "external";
@@ -45,7 +43,7 @@ const homeToAbout: TransitionFunction = ({
   meshRegistry,
   updateEffect,
 }) => {
-  console.log("Transition from home to about");
+  // TODO: calcolare tempo per exit animation
   const homeToAboutTimeline = gsap.timeline({});
   // TODO: (in this case will be the selected image)
   const selectedImageId = siparioImagesId[0];
@@ -65,10 +63,10 @@ const homeToAbout: TransitionFunction = ({
         x: Math.PI,
         y: 0,
         z: 0,
-        duration: 1.2,
+        duration: 0.6,
         ease: "power2.inOut",
       },
-      "<", // parte insieme alla riduzione della curvatura
+      0, // parte insieme alla riduzione della curvatura
     );
     homeToAboutTimeline.to(
       firstSiparioImageEntry.transformationContainerRef.current.scale,
@@ -77,12 +75,13 @@ const homeToAbout: TransitionFunction = ({
         y: 5,
         z: 5,
         delay: 0,
-        duration: 0.6,
+        duration: 0.4,
         ease: "power2.inOut",
         onComplete: () => {
           router.push(href.toString());
         },
       },
+      0.4,
     );
     homeToAboutTimeline.add(() => {
       updateEffect(selectedImageId, {
@@ -91,10 +90,74 @@ const homeToAbout: TransitionFunction = ({
         duration: 0.6,
         ease: "cubic-bezier(0.2,0.75,0.8,0.15);",
       });
-    }, "<");
+    }, 0.4);
   }
 };
-const defaultTransition = () => {};
+
+const AboutToHome: TransitionFunction = ({
+  href,
+  siparioImagesId,
+  router,
+  meshRegistry,
+  updateEffect,
+}) => {
+  // TODO: calcolare tempo per exit animation
+  const homeToAboutTimeline = gsap.timeline({});
+  // TODO: (in this case will be the selected image)
+  const selectedImageId = siparioImagesId[0];
+  const firstSiparioImageEntry = meshRegistry.get(selectedImageId);
+  if (firstSiparioImageEntry?.effectsRef.current) {
+    homeToAboutTimeline.add(() => {
+      updateEffect(selectedImageId, {
+        name: "curve",
+        strength: 0.8,
+        duration: 0.4,
+        ease: "cubic-bezier(0.2,0.75,0.8,0.15);",
+      });
+    }, 0);
+    homeToAboutTimeline.to(
+      firstSiparioImageEntry.transformationContainerRef.current.scale,
+      {
+        x: 1,
+        y: 1,
+        z: 1,
+        delay: 0,
+        duration: 0.4,
+        ease: "power2.inOut",
+        onComplete: () => {
+          router.push(href.toString());
+        },
+      },
+      0,
+    );
+    homeToAboutTimeline.to(
+      firstSiparioImageEntry.transformationContainerRef.current.rotation,
+      {
+        x: 0,
+        y: 0,
+        z: 0,
+        duration: 0.6,
+        ease: "power2.inOut",
+      },
+      0.4, // parte insieme alla riduzione della curvatura
+    );
+
+    homeToAboutTimeline.add(() => {
+      updateEffect(selectedImageId, {
+        name: "curve",
+        strength: 0,
+        duration: 0.6,
+        ease: "cubic-bezier(0.2,0.75,0.8,0.15);",
+      });
+    }, 0.4);
+  }
+};
+
+const defaultTransition: TransitionFunction = ({ router, href }) => {
+  // FIXME: remove
+  alert("manca transizione");
+  router.push(href.toString());
+};
 
 const routeTransitions: RouteTransitionMap = {
   home: {
@@ -104,7 +167,7 @@ const routeTransitions: RouteTransitionMap = {
     work: defaultTransition,
   },
   about: {
-    home: defaultTransition,
+    home: AboutToHome,
     about: defaultTransition,
     works: defaultTransition,
     work: defaultTransition,
@@ -180,12 +243,17 @@ export const AnimationLink = (props: AnimationLinkProps) => {
   const pathname = usePathname();
   const router = useRouter();
   const { meshRegistry, updateEffect } = useSiparioEffects();
+  const { isTransitioning, setIsTransitioning, setToRoute, setFromRoute } =
+    usePageTransition();
 
   const handleClick = (e: React.MouseEvent, href: Url) => {
     e.preventDefault();
     // TODO: qua avviare l'exit animation
     console.log("Clicked link to", href);
     const transition = getAnimationTimeline(pathname, href.toString());
+    setIsTransitioning(true);
+    setFromRoute(pathname);
+    setToRoute(href.toString());
     if (transition) {
       console.log("Found transition, executing...");
       transition({

@@ -13,6 +13,7 @@ import { SiparioEffectsProvider } from "@/components/Sipario/SiparioEffectsProvi
 import { graphql } from "@/graphql/generated/gql";
 import { fetchData } from "@/graphql/fetchData";
 import { AnimationLink } from "@/components/Sipario/AnimationLink";
+import { PageTransitionProvider } from "@/components/Sipario/TransitionContext";
 
 // TODO: add license for the fonts
 // Font display
@@ -138,66 +139,70 @@ export default async function RootLayout({
         className={`${aujournuit.variable} ${ronzino.variable} min-h-full bg-light-bg font-ronzino text-light-color dark:bg-black dark:text-orange-50`}
       >
         <NextIntlClientProvider>
-          <SiparioEffectsProvider>
-            <header className="fixed z-30 mx-auto flex min-h-12 w-full max-w-container2560 shrink-0 items-center border-b border-light-color px-4 py-2">
-              <nav className="isolate flex flex-1 text-sm font-medium mix-blend-difference">
-                <ul className="flex flex-grow items-center gap-4">
-                  <li className="mr-auto flex items-center gap-4">
-                    <Link
-                      href={`/${locale}`}
-                      className="flex items-center gap-3 leading-none"
-                      aria-label="Sandra savorgnani home"
-                    >
-                      Sandra Savorgnani
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href={`/${locale}/works`}>{t("header.works")}</Link>
-                  </li>
-                  <li>
-                    <AnimationLink href={`/${locale}/about`}>
-                      {t("header.info")}
-                    </AnimationLink>
-                  </li>
-                </ul>
-              </nav>
-            </header>
-            <div className="absolute left-0 top-0 h-full w-full overflow-hidden">
-              {data && <Sipario works={data.works} />}
-            </div>
-            <div className="pointer-events-none absolute left-0 top-0 z-40 h-full w-full overflow-hidden">
-              <Preloader />
-            </div>
-            {/* 
+          <PageTransitionProvider>
+            <SiparioEffectsProvider>
+              <header className="fixed z-30 mx-auto flex min-h-12 w-full max-w-container2560 shrink-0 items-center border-b border-light-color px-4 py-2">
+                <nav className="isolate flex flex-1 text-sm font-medium mix-blend-difference">
+                  <ul className="flex flex-grow items-center gap-4">
+                    <li className="mr-auto flex items-center gap-4">
+                      <AnimationLink
+                        href={`/${locale}`}
+                        className="flex items-center gap-3 leading-none"
+                        aria-label="Sandra savorgnani home"
+                      >
+                        Sandra Savorgnani
+                      </AnimationLink>
+                    </li>
+                    <li>
+                      <AnimationLink href={`/${locale}/works`}>
+                        {t("header.works")}
+                      </AnimationLink>
+                    </li>
+                    <li>
+                      <AnimationLink href={`/${locale}/about`}>
+                        {t("header.info")}
+                      </AnimationLink>
+                    </li>
+                  </ul>
+                </nav>
+              </header>
+              <div className="absolute left-0 top-0 h-full w-full overflow-hidden">
+                {data && <Sipario works={data.works} />}
+              </div>
+              <div className="pointer-events-none absolute left-0 top-0 z-40 h-full w-full overflow-hidden">
+                <Preloader />
+              </div>
+              {/* 
               FIXME: remove pointer-events-none after testing
               FIXME: sipario shaking on new page with overflow content due to scrollbar appearing
             */}
-            <div className="pointer-events-none relative z-10 h-full w-full">
-              {children}
-            </div>
-            {/* FOOTER */}
-            <footer className="fixed bottom-0 z-30 flex min-h-12 w-full max-w-container2560 shrink-0 flex-col items-center justify-center border-t border-light-color px-4 py-2 lg:flex-row lg:justify-between">
-              <Link
-                href={`/${locale}`}
-                className="mb-2 flex items-center lg:mb-0"
-              >
-                <Logo />
-              </Link>
-              {/* FIXME: create these pages */}
-              {/* <div className="flex items-center gap-2 text-sm">
+              <div className="pointer-events-none relative z-10 h-full w-full">
+                {children}
+              </div>
+              {/* FOOTER */}
+              <footer className="fixed bottom-0 z-30 flex min-h-12 w-full max-w-container2560 shrink-0 flex-col items-center justify-center border-t border-light-color px-4 py-2 lg:flex-row lg:justify-between">
+                <Link
+                  href={`/${locale}`}
+                  className="mb-2 flex items-center lg:mb-0"
+                >
+                  <Logo />
+                </Link>
+                {/* FIXME: create these pages */}
+                {/* <div className="flex items-center gap-2 text-sm">
               <Link href={`/${locale}/legal`}>{t("footer.legal")}</Link>|
               <Link href={`/${locale}/privacy`}>{t("footer.privacy")}</Link>|
               <Link href={`/${locale}/credit`}>{t("footer.credit")}</Link>
             </div> */}
-              {/* <div className="flex gap-3">
+                {/* <div className="flex gap-3">
             {locales.map((language) => (
               <Link key={language} href={`/${language}`}>
                 {language === locale ? <strong>{language}</strong> : language}
               </Link>
             ))}
           </div> */}
-            </footer>
-          </SiparioEffectsProvider>
+              </footer>
+            </SiparioEffectsProvider>
+          </PageTransitionProvider>
         </NextIntlClientProvider>
       </body>
     </html>

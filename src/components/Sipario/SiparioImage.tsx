@@ -4,14 +4,14 @@ import { useFrame, useThree } from "@react-three/fiber";
 import { RefObject, useEffect, useRef } from "react";
 import * as THREE from "three";
 import { useSiparioEffects } from "./SiparioEffectsProvider";
-import { curlEffect } from "./curlEffect";
+import { curlEffect } from "./meshEffects/curlEffect";
 import { DoubleSideImage } from "./doubleSideImage";
-import { inflateOnMouseEffect } from "./inflateOnMouseEffect";
+import { inflateOnMouseEffect } from "./meshEffects/inflateOnMouseEffect";
 import {
   MeshEffectContext,
   MeshEffectWrapper,
 } from "./useSiparioEffectsManager";
-import { windEffect } from "./windEffect";
+import { windEffect } from "./meshEffects/windEffect";
 
 type SiparioImageProps = {
   wrapperRef: RefObject<HTMLDivElement | null>;

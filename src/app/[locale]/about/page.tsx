@@ -40,6 +40,13 @@ export default async function Page({
   setRequestLocale(locale);
   const t = await getTranslations("about");
 
+  // EXIT ANIMATION IN THE CLIENT COMPONENT
+  //   useEffect(() => {
+  //   if (!isTransitioning) {
+  //     // Avvia animazione di default (es. sipario che si apre)
+  //   }
+  // }, []);
+
   return (
     <div className="mx-auto grid max-w-container2560 grid-cols-4 gap-4 px-4 lg:grid-cols-12">
       <div className="col-span-4 flex flex-col items-center lg:col-span-6 lg:col-start-4">
