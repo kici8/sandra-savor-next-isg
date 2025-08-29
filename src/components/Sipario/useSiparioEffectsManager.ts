@@ -1,19 +1,3 @@
-/**
- * Manages mesh effects for the Sipario component, allowing dynamic addition, update, and application of effects.
- *
- * @returns An object containing methods to add, update, and apply mesh effects, as well as the current list of effects.
- *
- * @property addEffect - Adds a new mesh effect to the manager.
- * @property updateEffect - Updates the strength of an existing effect, optionally animating the change.
- * @property applyEffects - Applies all active effects to the given mesh coordinates.
- * @property effects - The current array of effect wrappers.
- *
- * @example
- * const manager = useSiparioEffectsManager();
- * manager.addEffect({ name: "wave", effect: waveEffect, strength: 0.5 });
- * manager.updateEffect({ name: "wave", strength: 1, duration: 2 });
- * const [x, y, z] = manager.applyEffects({ ...meshParams, x: 0, y: 0, z: 0 });
- */
 import { useRef } from "react";
 import gsap from "gsap";
 import * as THREE from "three";
@@ -35,7 +19,7 @@ type MeshEffectParams = {
 
 export type MeshEffect = (props: MeshEffectParams) => [number, number, number];
 
-type MeshEffectWrapper = {
+export type MeshEffectWrapper = {
   effect: MeshEffect;
   strength: number;
   name: string;
@@ -60,21 +44,66 @@ export type UpdateEffectProps = {
   ease?: gsap.EaseString | gsap.EaseFunction;
 };
 
-export function useSiparioEffectsManager() {
-  const effectsRef = useRef<MeshEffectWrapper[]>([]);
-  const groupTransformRef = useRef<THREE.Group>(null);
+export type SiparioImageRegistry = Map<
+  string,
+  {
+    meshRef: React.RefObject<THREE.Mesh>;
+    effectsRef: React.RefObject<MeshEffectWrapper[]>;
+    transformationContainerRef: React.RefObject<THREE.Group>;
+  }
+>;
 
-  function addEffect({ name, effect, strength = 1 }: AddEffectProps) {
-    effectsRef.current.push({ name, effect, strength });
+type RegisterMeshProps = {
+  siparioImageId: string;
+  meshRef: React.RefObject<THREE.Mesh>;
+  effectsRef: React.RefObject<MeshEffectWrapper[]>;
+  transformationContainerRef: React.RefObject<THREE.Group>;
+};
+
+export function useSiparioEffectsManager() {
+  // Registry: id -> { meshRef, effectsRef, transformationContainerRef }
+  const siparioImageRegistry = useRef<SiparioImageRegistry>(new Map());
+
+  // Register a mesh and its refs
+  function registerMesh({
+    siparioImageId,
+    meshRef,
+    effectsRef,
+    transformationContainerRef,
+  }: RegisterMeshProps) {
+    siparioImageRegistry.current.set(siparioImageId, {
+      meshRef,
+      effectsRef,
+      transformationContainerRef,
+    });
   }
 
-  function updateEffect({
-    name,
-    strength,
-    duration = 1,
-    ease = "power2.out",
-  }: UpdateEffectProps) {
-    const target = effectsRef.current.find((e) => e.name === name);
+  function unregisterMesh(siparioImageId: string) {
+    siparioImageRegistry.current.delete(siparioImageId);
+  }
+
+  // Utility to get refs for a mesh by id
+  function getMeshEntry(siparioImageId: string) {
+    return siparioImageRegistry.current.get(siparioImageId);
+  }
+
+  // Effect management for a single mesh (by id)
+  function addEffect(
+    siparioImageId: string,
+    { name, effect, strength = 1 }: AddEffectProps,
+  ) {
+    const entry = siparioImageRegistry.current.get(siparioImageId);
+    if (!entry) return;
+    entry.effectsRef.current.push({ name, effect, strength });
+  }
+
+  function updateEffect(
+    siparioImageId: string,
+    { name, strength, duration = 1, ease = "power2.out" }: UpdateEffectProps,
+  ) {
+    const entry = siparioImageRegistry.current.get(siparioImageId);
+    if (!entry) return;
+    const target = entry.effectsRef.current.find((e) => e.name === name);
     if (!target) return;
     gsap.to(target, {
       strength,
@@ -83,15 +112,13 @@ export function useSiparioEffectsManager() {
     });
   }
 
-  function applyEffects({
-    orig,
-    bufferIndex,
-    context,
-    x,
-    y,
-    z,
-  }: ApplyEffectsProps) {
-    for (const { effect, strength } of effectsRef.current) {
+  function applyEffects(
+    siparioImageId: string,
+    { orig, bufferIndex, context, x, y, z }: ApplyEffectsProps,
+  ) {
+    const entry = siparioImageRegistry.current.get(siparioImageId);
+    if (!entry) return [x, y, z];
+    for (const { effect, strength } of entry.effectsRef.current) {
       if (strength <= 0.001) continue;
       const [dx, dy, dz] = effect({
         orig,
@@ -107,10 +134,12 @@ export function useSiparioEffectsManager() {
   }
 
   return {
+    meshRegistry: siparioImageRegistry,
+    registerMesh,
+    unregisterMesh,
+    getMeshEntry,
     addEffect,
     updateEffect,
     applyEffects,
-    effects: effectsRef.current,
-    groupTransformRef,
   };
 }

@@ -4,9 +4,12 @@ import { Url } from "next/dist/shared/lib/router/router";
 import Link, { LinkProps } from "next/link";
 import { useRouter } from "next/navigation";
 import { usePathname } from "next/navigation";
-import { MeshRegistry, useSiparioEffects } from "./SiparioEffectsProvider";
+import { useSiparioEffects } from "./SiparioEffectsProvider";
 import gsap from "gsap";
-import { UpdateEffectProps } from "./useSiparioEffectsManager";
+import {
+  SiparioImageRegistry,
+  UpdateEffectProps,
+} from "./useSiparioEffectsManager";
 
 type AnimationLinkProps = LinkProps & {
   children: React.ReactNode;
@@ -18,14 +21,15 @@ type RoutesWithExternal = Routes | "external";
 type TransitionFunction = ({
   href,
   router,
-  imagesIds,
+  siparioImagesId,
   meshRegistry,
+  updateEffect,
 }: {
   href: Url;
   router: ReturnType<typeof useRouter>;
-  imagesIds: string[];
-  meshRegistry: MeshRegistry;
-  updateEffect: ({ name, strength, duration, ease }: UpdateEffectProps) => void;
+  siparioImagesId: string[];
+  meshRegistry: SiparioImageRegistry;
+  updateEffect: (id: string, props: UpdateEffectProps) => void;
 }) => void;
 
 type RouteTransitionMap = {
@@ -36,19 +40,19 @@ type RouteTransitionMap = {
 
 const homeToAbout: TransitionFunction = ({
   href,
-  imagesIds,
+  siparioImagesId,
   router,
   meshRegistry,
   updateEffect,
 }) => {
   console.log("Transition from home to about");
   const homeToAboutTimeline = gsap.timeline({});
-  const firstMeshRef = meshRegistry.get(
-    "https://res.cloudinary.com/dxa1uyrml/image/upload/v1703958262/concerto_01_4121a9c0cd.jpg",
-  );
-  if (firstMeshRef?.current) {
+  // TODO: (in this case will be the selected image)
+  const selectedImageId = siparioImagesId[0];
+  const firstSiparioImageEntry = meshRegistry.get(selectedImageId);
+  if (firstSiparioImageEntry?.effectsRef.current) {
     homeToAboutTimeline.add(() => {
-      updateEffect({
+      updateEffect(selectedImageId, {
         name: "curve",
         strength: 0.8,
         duration: 0.6,
@@ -56,7 +60,7 @@ const homeToAbout: TransitionFunction = ({
       });
     });
     homeToAboutTimeline.to(
-      firstMeshRef.current.rotation,
+      firstSiparioImageEntry.transformationContainerRef.current.rotation,
       {
         x: Math.PI,
         y: 0,
@@ -66,19 +70,22 @@ const homeToAbout: TransitionFunction = ({
       },
       "<", // parte insieme alla riduzione della curvatura
     );
-    homeToAboutTimeline.to(firstMeshRef.current.scale, {
-      x: 5,
-      y: 5,
-      z: 5,
-      delay: 0,
-      duration: 0.6,
-      ease: "power2.inOut",
-      onComplete: () => {
-        router.push(href.toString());
+    homeToAboutTimeline.to(
+      firstSiparioImageEntry.transformationContainerRef.current.scale,
+      {
+        x: 5,
+        y: 5,
+        z: 5,
+        delay: 0,
+        duration: 0.6,
+        ease: "power2.inOut",
+        onComplete: () => {
+          router.push(href.toString());
+        },
       },
-    });
+    );
     homeToAboutTimeline.add(() => {
-      updateEffect({
+      updateEffect(selectedImageId, {
         name: "curve",
         strength: 0.0,
         duration: 0.6,
@@ -184,8 +191,10 @@ export const AnimationLink = (props: AnimationLinkProps) => {
       transition({
         href,
         router,
-        imagesIds: [],
-        meshRegistry,
+        siparioImagesId: [
+          "https://res.cloudinary.com/dxa1uyrml/image/upload/v1703958262/concerto_01_4121a9c0cd.jpg",
+        ],
+        meshRegistry: meshRegistry.current!,
         updateEffect,
       });
     }
