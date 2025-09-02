@@ -1,3 +1,4 @@
+import { AnimatedCopy } from "@/components/AnimatedCopy";
 import { routing } from "@/i18n/routing";
 import { Metadata } from "next";
 import { hasLocale, Locale } from "next-intl";
@@ -51,16 +52,21 @@ export default async function Page({
     <div className="mx-auto grid max-w-container2560 grid-cols-4 gap-4 px-4 lg:grid-cols-12">
       <div className="col-span-4 flex flex-col items-center lg:col-span-6 lg:col-start-4">
         <div className="relative w-full pb-16 pt-32">
-          <h1
-            className="pointer-events-none relative z-10 text-center font-aujournuit text-7xl leading-[0.8]"
-            dangerouslySetInnerHTML={{ __html: t("title") }}
-          />
+          <AnimatedCopy>
+            <h1
+              className="pointer-events-none relative z-10 text-center font-aujournuit text-7xl leading-[0.8]"
+              dangerouslySetInnerHTML={{ __html: t("title") }}
+            />
+          </AnimatedCopy>
         </div>
 
-        <p
-          className="relative z-10 -mt-4 text-center text-sm"
-          dangerouslySetInnerHTML={{ __html: t("description") }}
-        />
+        <AnimatedCopy>
+          <p
+            className="relative z-10 -mt-4 text-center text-sm"
+            dangerouslySetInnerHTML={{ __html: t("description") }}
+          />
+        </AnimatedCopy>
+
         <div className="py-16">
           <InfoRow title={t("info.servicesLabel")} value={t("info.services")} />
           <InfoRow title={t("info.locationLabel")} value={t("info.location")} />

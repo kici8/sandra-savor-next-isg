@@ -136,12 +136,12 @@ export default async function RootLayout({
   return (
     <html lang={locale}>
       <body
-        className={`${aujournuit.variable} ${ronzino.variable} min-h-full bg-light-bg font-ronzino text-light-color dark:bg-black dark:text-orange-50`}
+        className={`${aujournuit.variable} ${ronzino.variable} bg-light-bg text-light-color min-h-full font-ronzino dark:bg-black dark:text-orange-50`}
       >
         <NextIntlClientProvider>
           <PageTransitionProvider>
             <SiparioEffectsProvider>
-              <header className="fixed z-30 mx-auto flex min-h-12 w-full max-w-container2560 shrink-0 items-center border-b border-light-color px-4 py-2">
+              <header className="fixed z-30 mx-auto flex min-h-12 w-full max-w-container2560 shrink-0 items-center px-4 py-2">
                 <nav className="isolate flex flex-1 text-sm font-medium mix-blend-difference">
                   <ul className="flex flex-grow items-center gap-4">
                     <li className="mr-auto flex items-center gap-4">
@@ -180,7 +180,7 @@ export default async function RootLayout({
                 {children}
               </div>
               {/* FOOTER */}
-              <footer className="fixed bottom-0 z-30 flex min-h-12 w-full max-w-container2560 shrink-0 flex-col items-center justify-center border-t border-light-color px-4 py-2 lg:flex-row lg:justify-between">
+              <footer className="fixed bottom-0 z-30 flex min-h-12 w-full max-w-container2560 shrink-0 flex-col items-center justify-center px-4 py-2 lg:flex-row lg:justify-between">
                 <Link
                   href={`/${locale}`}
                   className="mb-2 flex items-center lg:mb-0"

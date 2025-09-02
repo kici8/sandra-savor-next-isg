@@ -193,10 +193,12 @@ const routeTransitions: RouteTransitionMap = {
 };
 
 function getRoutesFromPath(path: string): Routes | null {
+  // TODO: check if path is external (not in the same domain)
   if (path === "/it" || path === "/en") return "home";
   if (path.includes("/about")) return "about";
-  if (path.includes("/works")) return "works";
   if (path.includes("/works/")) return "work";
+  if (path.includes("/works")) return "works";
+
   return null; // default fallback
 }
 
@@ -243,8 +245,7 @@ export const AnimationLink = (props: AnimationLinkProps) => {
   const pathname = usePathname();
   const router = useRouter();
   const { meshRegistry, updateEffect } = useSiparioEffects();
-  const { isTransitioning, setIsTransitioning, setToRoute, setFromRoute } =
-    usePageTransition();
+  const { setIsTransitioning, setToRoute, setFromRoute } = usePageTransition();
 
   const handleClick = (e: React.MouseEvent, href: Url) => {
     e.preventDefault();
