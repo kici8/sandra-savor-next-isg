@@ -4,6 +4,7 @@ import { Metadata } from "next";
 import { hasLocale, Locale } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
+import { AboutContent } from "./AboutContent";
 
 // TODO: no need to use async if no data fetching is needed
 // TODO: Or move these texts to the strapi backOffice
@@ -51,8 +52,9 @@ export default async function Page({
   return (
     <div className="mx-auto grid max-w-container2560 grid-cols-4 gap-4 px-4 lg:grid-cols-12">
       <div className="col-span-4 flex flex-col items-center lg:col-span-6 lg:col-start-4">
-        <div className="relative w-full pb-16 pt-32">
-          <AnimatedCopy>
+        <AboutContent title={t("title")} description={t("description")} />
+        {/* <div className="relative w-full pb-16 pt-32">
+          <AnimatedCopy show={true}>
             <h1
               className="pointer-events-none relative z-10 text-center font-aujournuit text-7xl leading-[0.8]"
               dangerouslySetInnerHTML={{ __html: t("title") }}
@@ -60,7 +62,7 @@ export default async function Page({
           </AnimatedCopy>
         </div>
 
-        <AnimatedCopy>
+        <AnimatedCopy show={true}>
           <p
             className="relative z-10 -mt-4 text-center text-sm"
             dangerouslySetInnerHTML={{ __html: t("description") }}
@@ -78,7 +80,7 @@ export default async function Page({
             title={t("info.socialLabel")}
             value={`<a href="https://www.instagram.com/sandra.savorgnani/" target=”_blank”>Instagram</a>`}
           />
-        </div>
+        </div> */}
       </div>
     </div>
   );

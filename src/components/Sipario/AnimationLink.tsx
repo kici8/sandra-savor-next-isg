@@ -2,14 +2,13 @@
 
 import gsap from "gsap";
 import { Url } from "next/dist/shared/lib/router/router";
-import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
 import { useSiparioEffects } from "./SiparioEffectsProvider";
 import {
   SiparioImageRegistry,
   UpdateEffectProps,
 } from "./useSiparioEffectsManager";
 import { usePageTransition } from "./TransitionContext";
+import { Link, usePathname, useRouter } from "@/i18n/navigation";
 
 type AnimationLinkProps = React.ComponentPropsWithoutRef<typeof Link>;
 
@@ -114,7 +113,7 @@ const AboutToHome: TransitionFunction = ({
         duration: 0.4,
         ease: "cubic-bezier(0.2,0.75,0.8,0.15);",
       });
-    }, 0);
+    }, 0.4);
     homeToAboutTimeline.to(
       firstSiparioImageEntry.transformationContainerRef.current.scale,
       {
@@ -128,7 +127,7 @@ const AboutToHome: TransitionFunction = ({
           router.push(href.toString());
         },
       },
-      0,
+      0.4,
     );
     homeToAboutTimeline.to(
       firstSiparioImageEntry.transformationContainerRef.current.rotation,
@@ -139,7 +138,7 @@ const AboutToHome: TransitionFunction = ({
         duration: 0.6,
         ease: "power2.inOut",
       },
-      0.4, // parte insieme alla riduzione della curvatura
+      0.8, // parte insieme alla riduzione della curvatura
     );
 
     homeToAboutTimeline.add(() => {
@@ -149,7 +148,7 @@ const AboutToHome: TransitionFunction = ({
         duration: 0.6,
         ease: "cubic-bezier(0.2,0.75,0.8,0.15);",
       });
-    }, 0.4);
+    }, 0.8);
   }
 };
 
@@ -194,20 +193,23 @@ const routeTransitions: RouteTransitionMap = {
 
 function getRoutesFromPath(path: string): Routes | null {
   // TODO: check if path is external (not in the same domain)
-  if (path === "/it" || path === "/en") return "home";
-  if (path.includes("/about")) return "about";
-  if (path.includes("/works/")) return "work";
-  if (path.includes("/works")) return "works";
-
+  // FIXME: check if next intl navigation expose a better way to get the current route
+  console.log("path 🤔🤔", path);
+  if (path === "/") return "home";
+  if (path == "/about") return "about";
+  if (path === "/works/[slug]") return "work";
+  if (path === "/works") return "works";
   return null; // default fallback
 }
 
 function getAnimationTimeline(from: string, to: string) {
+  console.log("👉from", from, "👉to", to);
   if (from === to) return null; // No transition needed
   if (to === "external") return null; // No transition defined for external destinations
   const fromRoute = getRoutesFromPath(from);
   const toRoute = getRoutesFromPath(to);
   if (!fromRoute || !toRoute) return null; // Invalid routes
+  console.log("Transition from 🥶🥶🥶🥶", fromRoute, "to", toRoute);
   return routeTransitions[fromRoute][toRoute];
 }
 
@@ -251,8 +253,8 @@ export const AnimationLink = (props: AnimationLinkProps) => {
     e.preventDefault();
     // TODO: qua avviare l'exit animation
     console.log("Clicked link to", href);
-    const transition = getAnimationTimeline(pathname, href.toString());
     setIsTransitioning(true);
+    const transition = getAnimationTimeline(pathname, href.toString());
     setFromRoute(pathname);
     setToRoute(href.toString());
     if (transition) {
@@ -266,6 +268,8 @@ export const AnimationLink = (props: AnimationLinkProps) => {
         meshRegistry: meshRegistry.current!,
         updateEffect,
       });
+    } else {
+      setIsTransitioning(false);
     }
   };
   return (

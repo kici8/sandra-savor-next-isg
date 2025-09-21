@@ -1,6 +1,11 @@
 import Logo from "@/components/Logo";
 import Preloader from "@/components/preloader";
+import { AnimationLink } from "@/components/Sipario/AnimationLink";
 import Sipario from "@/components/Sipario/Sipario";
+import { SiparioEffectsProvider } from "@/components/Sipario/SiparioEffectsProvider";
+import { PageTransitionProvider } from "@/components/Sipario/TransitionContext";
+import { fetchData } from "@/graphql/fetchData";
+import { graphql } from "@/graphql/generated/gql";
 import { routing } from "@/i18n/routing";
 import type { Metadata } from "next";
 import { hasLocale, Locale, NextIntlClientProvider } from "next-intl";
@@ -9,11 +14,7 @@ import localFont from "next/font/local";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import "../globals.css";
-import { SiparioEffectsProvider } from "@/components/Sipario/SiparioEffectsProvider";
-import { graphql } from "@/graphql/generated/gql";
-import { fetchData } from "@/graphql/fetchData";
-import { AnimationLink } from "@/components/Sipario/AnimationLink";
-import { PageTransitionProvider } from "@/components/Sipario/TransitionContext";
+import { IsTransitioningTestIndicator } from "@/components/Sipario/IsTransitioningTestIndicator";
 
 // TODO: add license for the fonts
 // Font display
@@ -136,7 +137,7 @@ export default async function RootLayout({
   return (
     <html lang={locale}>
       <body
-        className={`${aujournuit.variable} ${ronzino.variable} bg-light-bg text-light-color min-h-full font-ronzino dark:bg-black dark:text-orange-50`}
+        className={`${aujournuit.variable} ${ronzino.variable} min-h-full bg-light-bg font-ronzino text-light-color dark:bg-black dark:text-orange-50`}
       >
         <NextIntlClientProvider>
           <PageTransitionProvider>
@@ -146,7 +147,7 @@ export default async function RootLayout({
                   <ul className="flex flex-grow items-center gap-4">
                     <li className="mr-auto flex items-center gap-4">
                       <AnimationLink
-                        href={`/${locale}`}
+                        href={`/`}
                         className="flex items-center gap-3 leading-none"
                         aria-label="Sandra savorgnani home"
                       >
@@ -154,18 +155,19 @@ export default async function RootLayout({
                       </AnimationLink>
                     </li>
                     <li>
-                      <AnimationLink href={`/${locale}/works`}>
+                      <AnimationLink href={`/works`}>
                         {t("header.works")}
                       </AnimationLink>
                     </li>
                     <li>
-                      <AnimationLink href={`/${locale}/about`}>
+                      <AnimationLink href={`/about`}>
                         {t("header.info")}
                       </AnimationLink>
                     </li>
                   </ul>
                 </nav>
               </header>
+              <IsTransitioningTestIndicator />
               <div className="absolute left-0 top-0 h-full w-full overflow-hidden">
                 {data && <Sipario works={data.works} />}
               </div>
